@@ -1,8 +1,4 @@
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 export function FieldInput(props: {
@@ -17,7 +13,8 @@ export function FieldInput(props: {
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
       <Input name={name} type="text" placeholder={placeholder} />
       <FieldDescription>
-        Choose a unique username for your account.
+        {/*  */}
+        {description}
       </FieldDescription>
     </Field>
   );

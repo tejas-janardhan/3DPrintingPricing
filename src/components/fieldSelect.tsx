@@ -21,7 +21,7 @@ const FieldSelect = (params: {
 }) => {
   const { name, options, label, description, placeholder } = params;
   return (
-    <Field>
+    <Field className="text-gray-50">
       <FieldLabel>{label}</FieldLabel>
       <Select name={name}>
         <SelectTrigger>
@@ -35,7 +35,11 @@ const FieldSelect = (params: {
           ))}
         </SelectContent>
       </Select>
-      {description && <FieldDescription>{description}</FieldDescription>}
+      {description && (
+        <FieldDescription className="text-gray-50">
+          {description}
+        </FieldDescription>
+      )}
     </Field>
   );
 };
