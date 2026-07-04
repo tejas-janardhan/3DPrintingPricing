@@ -11,9 +11,17 @@ import { ThemeToggle } from "./themeToggle";
 
 const LINKS: { label: string; to: string }[] = [
   { label: "Calculator", to: "/" },
+  { label: "Printer Cost", to: "/printer-cost" },
   { label: "Settings", to: "/settings" },
-  { label: "Backup", to: "/backup" },
 ];
+
+const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    navigationMenuTriggerStyle(),
+    "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+    isActive &&
+      "bg-accent text-accent-foreground focus:text-accent-foreground",
+  );
 
 export function Nav() {
   return (
@@ -26,14 +34,7 @@ export function Nav() {
                 <NavLink
                   to={link.to}
                   end={link.to === "/"}
-                  className={({ isActive }) =>
-                    cn(
-                      navigationMenuTriggerStyle(),
-                      "bg-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                      isActive &&
-                        "bg-accent text-accent-foreground focus:text-accent-foreground",
-                    )
-                  }
+                  className={navLinkClassName}
                 >
                   {link.label}
                 </NavLink>
@@ -42,7 +43,20 @@ export function Nav() {
           ))}
         </NavigationMenuList>
       </NavigationMenu>
-      <ThemeToggle />
+      <div className="flex items-center gap-2">
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuLink asChild>
+                <NavLink to="/backup" className={navLinkClassName}>
+                  Backup
+                </NavLink>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+        <ThemeToggle />
+      </div>
     </div>
   );
 }

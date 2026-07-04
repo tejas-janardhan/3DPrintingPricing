@@ -1,8 +1,8 @@
-import { EMPTY_APP_DATA, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
+import { EMPTY_APP_DATA, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PRINTER_COST, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
 import { defaultPlateName } from "@/lib/plates";
 import { toast } from "sonner";
 import { migrate, SCHEMA_VERSION } from "./migrations";
-import type { AppData, PlateInputs, PricingInputs, Settings } from "@/types";
+import type { AppData, PlateInputs, PricingInputs, PrinterCostInputs, Settings } from "@/types";
 
 export type { AppData } from "@/types";
 
@@ -71,6 +71,12 @@ export function mergeAppData(input: unknown): AppData {
     pricing: {
       ...EMPTY_PRICING,
       ...(isObject(input.pricing) ? (input.pricing as Partial<PricingInputs>) : {}),
+    },
+    printerCost: {
+      ...EMPTY_PRINTER_COST,
+      ...(isObject(input.printerCost)
+        ? (input.printerCost as Partial<PrinterCostInputs>)
+        : {}),
     },
   };
 }
@@ -160,7 +166,7 @@ const BACKUP_APP_ID = "3d-printing-pricing";
 // wrapper) — independent of the data's SCHEMA_VERSION, which is carried inside
 // `data` itself. Only bump this if the wrapper structure changes.
 const BACKUP_VERSION = 1;
-const KNOWN_KEYS = ["settings", "plates", "plate", "processing", "pricing"] as const;
+const KNOWN_KEYS = ["settings", "plates", "plate", "processing", "pricing", "printerCost"] as const;
 
 export type Backup = {
   app: string;

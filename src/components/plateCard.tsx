@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { X } from "lucide-react";
+import { ChevronDown, Settings2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import FieldSelect from "./fieldSelect";
 import { FieldInput } from "./fieldInput";
 import { Card } from "./card";
@@ -10,8 +11,10 @@ import {
   FILAMENT_PRICE_OPTIONS,
   FILAMENT_TYPE_OPTIONS,
 } from "@/config/constants";
+import { cn } from "@/lib/utils";
 import { required, requiredNumber } from "@/lib/validators";
 import { computePlateCost, formatRs } from "@/lib/pricing";
+import { isFilamentSettingsComplete } from "@/lib/settings";
 import type { FilamentType, PlateInputs, Settings } from "@/types";
 
 export function PlateCard({
@@ -26,6 +29,8 @@ export function PlateCard({
   onRemove?: () => void;
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
+
+  const filamentReady = isFilamentSettingsComplete(settings, plate.filamentType);
 
   const updatePlate = <K extends keyof PlateInputs>(
     field: K,
@@ -67,6 +72,17 @@ export function PlateCard({
       }
     >
       <div className="flex w-full flex-col gap-6">
+        {!filamentReady && (
+          <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Settings2 className="size-3.5" />
+              Configure settings for this filament type to enable this plate.
+            </span>
+            <Button asChild variant="outline" size="sm" className="h-7">
+              <Link to="/settings">Configure settings</Link>
+            </Button>
+          </div>
+        )}
         <Form orientation="vertical">
           <FieldSelect
             options={FILAMENT_TYPE_OPTIONS}
@@ -94,6 +110,7 @@ export function PlateCard({
             value={plate.filamentPrice}
             onValueChange={(value) => updatePlate("filamentPrice", value)}
             validate={required("Filament pricing")}
+            disabled={!filamentReady}
           />
           <div className="flex gap-4">
             <FieldInput
@@ -103,6 +120,7 @@ export function PlateCard({
               value={plate.printTimeHours}
               onChange={(value) => updatePlate("printTimeHours", value)}
               validate={requiredNumber("Hours")}
+              disabled={!filamentReady}
             />
             <FieldInput
               label={"Print Time (Minutes)"}
@@ -111,6 +129,7 @@ export function PlateCard({
               value={plate.printTimeMinutes}
               onChange={(value) => updatePlate("printTimeMinutes", value)}
               validate={requiredNumber("Minutes")}
+              disabled={!filamentReady}
             />
           </div>
           <FieldInput
@@ -121,25 +140,35 @@ export function PlateCard({
             value={plate.printWeight}
             onChange={(value) => updatePlate("printWeight", value)}
             validate={requiredNumber("Print weight")}
+            disabled={!filamentReady}
           />
         </Form>
 
         <Separator />
 
-        <div className="flex flex-col gap-3">
-          {showBreakdown && (
-            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-              {costBreakdown.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center justify-between gap-8"
-                >
-                  <span>{item.label}</span>
-                  <span className="tabular-nums">{formatRs(item.value)}</span>
-                </div>
-              ))}
+        <div className="flex flex-col">
+          <div
+            className={cn(
+              "grid transition-all duration-300 ease-in-out",
+              showBreakdown
+                ? "grid-rows-[1fr] opacity-100"
+                : "grid-rows-[0fr] opacity-0",
+            )}
+          >
+            <div className="overflow-hidden">
+              <div className="flex flex-col gap-2 pb-3 text-sm text-muted-foreground">
+                {costBreakdown.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between gap-8"
+                  >
+                    <span>{item.label}</span>
+                    <span className="tabular-nums">{formatRs(item.value)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
+          </div>
           <Button
             variant="ghost"
             size="sm"
@@ -147,8 +176,14 @@ export function PlateCard({
             onClick={() => setShowBreakdown((shown) => !shown)}
           >
             {showBreakdown ? "Hide breakdown" : "See breakdown"}
+            <ChevronDown
+              className={cn(
+                "size-3.5 transition-transform duration-300",
+                showBreakdown && "rotate-180",
+              )}
+            />
           </Button>
-          <div className="flex items-center justify-between gap-8 text-base font-semibold">
+          <div className="mt-3 flex items-center justify-between gap-8 text-base font-semibold">
             <span>Plate Cost</span>
             <span className="tabular-nums">{formatRs(costs.plateCost)}</span>
           </div>

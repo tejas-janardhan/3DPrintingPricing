@@ -3,6 +3,7 @@ import type {
   AppData,
   PlateInputs,
   PricingInputs,
+  PrinterCostInputs,
   ProcessingInputs,
   Settings,
 } from "@/types";
@@ -13,6 +14,7 @@ export type AppStateContextValue = {
   setPlates: (plates: PlateInputs[]) => void;
   setProcessing: (processing: ProcessingInputs) => void;
   setPricing: (pricing: PricingInputs) => void;
+  setPrinterCost: (printerCost: PrinterCostInputs) => void;
   /** Replace all data, e.g. after importing a backup. */
   importData: (data: AppData) => void;
   /** Clear everything back to empty defaults. */

@@ -1,4 +1,5 @@
 import { MONITORING_RATE, SETUP_TIME_MINUTES } from "@/config/constants";
+import { isPlateComplete } from "@/lib/plates";
 import type {
   FinalPricing,
   PlateCosts,
@@ -36,10 +37,15 @@ export function computePlateCost(
       num(settings.electricityCost)) /
       1000,
   );
-  const plateCost = Math.ceil(
-    (materialCost + monitoringCost + printUsageCost + electricityCost) *
-      num(settings.multiplier),
-  );
+  // Only a fully-filled plate has a real cost. Incomplete plates still expose
+  // their intermediary costs for the breakdown, but their plate cost is zero so
+  // half-entered plates don't inflate the final quote.
+  const plateCost = isPlateComplete(plate)
+    ? Math.ceil(
+        (materialCost + monitoringCost + printUsageCost + electricityCost) *
+          num(settings.multiplier),
+      )
+    : 0;
 
   return {
     materialCost,

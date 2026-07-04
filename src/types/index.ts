@@ -5,6 +5,15 @@ export type AppData = {
   plates: PlateInputs[];
   processing: ProcessingInputs;
   pricing: PricingInputs;
+  printerCost: PrinterCostInputs;
+};
+
+export type PrinterCostInputs = {
+  printerCost: string;
+  additionalCost: string;
+  hoursPerMonth: string;
+  years: string;
+  months: string;
 };
 
 export type PlateCosts = {

@@ -4,7 +4,6 @@ import { FieldInput } from "./fieldInput";
 import { Card } from "./card";
 import { Form } from "./form";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 import { FILAMENT_TYPE_OPTIONS } from "@/config/constants";
 import { requiredNumber } from "@/lib/validators";
 import type { FilamentSettings, FilamentType, Settings } from "@/types";
@@ -45,9 +44,16 @@ export function SettingsCard({
     onChange({ ...settings, [field]: value });
 
   return (
-    <Card
-      title="Settings"
-      action={
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Settings
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Configure the costs and pricing used across your quotes.
+          </p>
+        </div>
         <Button
           variant="outline"
           size="sm"
@@ -58,9 +64,9 @@ export function SettingsCard({
         >
           {isEditing ? "Done" : "Edit"}
         </Button>
-      }
-    >
-      <div className="flex flex-col gap-6">
+      </div>
+
+      <Card title="Filament Settings">
         <Form orientation="horizontal">
           <FieldSelect
             options={FILAMENT_TYPE_OPTIONS}
@@ -98,10 +104,11 @@ export function SettingsCard({
             className="basis-[150%]"
             showError={showErrors}
           />
-          <Separator
-            orientation="vertical"
-            className="self-stretch data-[orientation=vertical]:h-auto"
-          />
+        </Form>
+      </Card>
+
+      <Card title="Operating Costs">
+        <Form orientation="horizontal">
           <FieldInput
             label={"Labour Rate"}
             placeholder={"Enter Labour Rate"}
@@ -127,14 +134,14 @@ export function SettingsCard({
             className="basis-[90%]"
           />
         </Form>
+      </Card>
 
-        <Separator />
-
+      <Card title="Pricing">
         <Form orientation="horizontal">
           <FieldInput
             label={"Multiplier"}
             placeholder={"Enter Multiplier"}
-            description="Pricing multiplier"
+            description="Pricing multiplier (account for errors)"
             name={"multiplier"}
             value={settings.multiplier}
             onChange={(value) => updateGlobalSetting("multiplier", value)}
@@ -154,7 +161,7 @@ export function SettingsCard({
             showError={showErrors}
           />
         </Form>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

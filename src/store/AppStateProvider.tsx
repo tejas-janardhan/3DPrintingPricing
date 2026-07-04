@@ -7,7 +7,7 @@ import {
 } from "react";
 import { loadAppData, saveAppData } from "./appData";
 import { AppStateContext } from "./appStateContext";
-import type { AppData, PlateInputs, PricingInputs, ProcessingInputs, Settings } from "@/types";
+import type { AppData, PlateInputs, PricingInputs, PrinterCostInputs, ProcessingInputs, Settings } from "@/types";
 import { EMPTY_APP_DATA } from "@/config/constants";
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
@@ -35,6 +35,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     (pricing: PricingInputs) => setData((prev) => ({ ...prev, pricing })),
     [],
   );
+  const setPrinterCost = useCallback(
+    (printerCost: PrinterCostInputs) =>
+      setData((prev) => ({ ...prev, printerCost })),
+    [],
+  );
   const importData = useCallback((next: AppData) => setData(next), []);
   const resetData = useCallback(() => setData(EMPTY_APP_DATA), []);
 
@@ -45,6 +50,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setPlates,
       setProcessing,
       setPricing,
+      setPrinterCost,
       importData,
       resetData,
     }),
@@ -54,6 +60,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setPlates,
       setProcessing,
       setPricing,
+      setPrinterCost,
       importData,
       resetData,
     ],

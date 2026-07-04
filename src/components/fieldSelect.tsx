@@ -24,6 +24,7 @@ const FieldSelect = (params: {
   onValueChange?: (value: string) => void;
   validate?: Validator;
   showError?: boolean;
+  disabled?: boolean;
 }) => {
   const {
     name,
@@ -35,6 +36,7 @@ const FieldSelect = (params: {
     onValueChange,
     validate,
     showError,
+    disabled,
   } = params;
   const [selected, setSelected] = useState<string>();
   const [touched, setTouched] = useState(false);
@@ -52,7 +54,12 @@ const FieldSelect = (params: {
     <Field data-invalid={error ? "true" : undefined}>
       <FieldLabel>{label}</FieldLabel>
       <div className="flex flex-col gap-1">
-        <Select name={name} value={value} onValueChange={handleChange}>
+        <Select
+          name={name}
+          value={value}
+          onValueChange={handleChange}
+          disabled={disabled}
+        >
           <SelectTrigger aria-invalid={error ? true : undefined}>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
