@@ -89,7 +89,10 @@ export function computePlateCost(
   );
   const printUsageCost = Math.ceil(totalPrintHours * plateCostPerHour);
   const electricityCost = Math.ceil(
-    totalPrintHours * num(settings.electricityCost),
+    (totalPrintHours *
+      num(settings.byFilament[plate.filamentType].powerConsumption) *
+      num(settings.electricityCost)) /
+      1000,
   );
   const plateCost = Math.ceil(
     (materialCost + monitoringCost + printUsageCost + electricityCost) *
