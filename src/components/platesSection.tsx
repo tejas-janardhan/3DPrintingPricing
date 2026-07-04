@@ -1,6 +1,5 @@
 import { Plus } from "lucide-react";
 import { PlateCard } from "./plateCard";
-import { Button } from "./ui/button";
 import { MAX_PLATES } from "@/config/constants";
 import { isPlateComplete, makePlate } from "@/lib/plates";
 import type { PlateInputs, Settings } from "@/types";
@@ -41,22 +40,17 @@ export function PlatesSection({
           onRemove={plates.length > 1 ? () => removePlate(plate.id) : undefined}
         />
       ))}
-      <div className="flex flex-col items-start gap-1 self-start">
-        <Button
-          variant="outline"
-          disabled={!canAddPlate}
-          onClick={addPlate}
-          className="h-auto"
-        >
+      <button
+        type="button"
+        disabled={!canAddPlate}
+        onClick={addPlate}
+        className="flex w-72 min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-transparent text-sm font-medium text-muted-foreground transition-colors hover:border-ring hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+      >
+        <span className="flex size-9 items-center justify-center rounded-full border border-dashed border-current">
           <Plus className="size-4" />
-          Add Plate
-        </Button>
-        {atPlateLimit && (
-          <span className="text-xs text-muted-foreground">
-            Maximum of {MAX_PLATES} plates reached.
-          </span>
-        )}
-      </div>
+        </span>
+        {atPlateLimit ? `Max ${MAX_PLATES} plates` : "Add Plate"}
+      </button>
     </div>
   );
 }

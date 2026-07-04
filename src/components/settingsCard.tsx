@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import FieldSelect from "./fieldSelect";
 import { FieldInput } from "./fieldInput";
 import { Form } from "./form";
+import { CardSection } from "./section";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -21,31 +22,6 @@ type GlobalSettingField =
   | "electricityCost"
   | "multiplier"
   | "taxPercent";
-
-/** A titled group of related fields inside the settings card. */
-function SettingsSection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <div className="text-base font-medium leading-none text-foreground">
-          {title}
-        </div>
-        {description && (
-          <p className="text-base text-muted-foreground">{description}</p>
-        )}
-      </div>
-      {children}
-    </section>
-  );
-}
 
 export function SettingsCard({
   settings,
@@ -99,7 +75,7 @@ export function SettingsCard({
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6">
-        <SettingsSection
+        <CardSection
           title="Filament Settings"
           description="Printing costs specific to each filament type."
         >
@@ -142,11 +118,11 @@ export function SettingsCard({
               showError={showErrors}
             />
           </Form>
-        </SettingsSection>
+        </CardSection>
 
         <Separator />
 
-        <SettingsSection
+        <CardSection
           title="Operating Costs"
           description="Shared hourly and utility costs."
         >
@@ -176,11 +152,11 @@ export function SettingsCard({
               className="w-48"
             />
           </Form>
-        </SettingsSection>
+        </CardSection>
 
         <Separator />
 
-        <SettingsSection
+        <CardSection
           title="Pricing"
           description="Markup and tax applied to every quote."
         >
@@ -210,7 +186,7 @@ export function SettingsCard({
               className="w-48"
             />
           </Form>
-        </SettingsSection>
+        </CardSection>
       </CardContent>
     </Card>
   );

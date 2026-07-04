@@ -1,6 +1,13 @@
 import { FieldInput } from "./fieldInput";
-import { Card } from "./card";
 import { Form } from "./form";
+import { CardSection } from "./section";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Separator } from "./ui/separator";
 import { requiredNumber } from "@/lib/validators";
 import { formatRs } from "@/lib/pricing";
@@ -33,97 +40,111 @@ export function PrinterCostCard({
   ];
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+    <Card>
+      <CardHeader className="border-b pb-6">
+        <CardTitle className="text-2xl font-semibold tracking-tight">
           Cost of Printer per Hour Estimate
-        </h1>
-        <p className="text-sm text-muted-foreground">
+        </CardTitle>
+        <CardDescription>
           Estimate the hourly cost of your printer to recoup its costs.
-        </p>
-      </div>
+        </CardDescription>
+      </CardHeader>
 
-      <Card title="Costs">
-        <Form orientation="horizontal">
-          <FieldInput
-            label={"Cost of Printer"}
-            placeholder={"Enter cost of printer"}
-            description="Purchase cost in rupees"
-            name={"printerCost"}
-            value={inputs.printerCost}
-            onChange={(value) => update("printerCost", value)}
-            validate={requiredNumber("Cost of printer")}
-            className="basis-[120%]"
-          />
-          <FieldInput
-            label={"Additional Cost"}
-            placeholder={"Enter additional cost"}
-            description="Setup, accessories, etc."
-            name={"additionalCost"}
-            value={inputs.additionalCost}
-            onChange={(value) => update("additionalCost", value)}
-            validate={requiredNumber("Additional cost")}
-            className="basis-[120%]"
-          />
-        </Form>
-      </Card>
-
-      <Card title="Usage">
-        <Form orientation="horizontal">
-          <FieldInput
-            label={"Hourly Usage per Month"}
-            placeholder={"Enter hours per month"}
-            description="Estimated hours used each month"
-            name={"hoursPerMonth"}
-            value={inputs.hoursPerMonth}
-            onChange={(value) => update("hoursPerMonth", value)}
-            validate={requiredNumber("Hourly usage per month")}
-            className="basis-[160%]"
-          />
-          <div className="flex items-center gap-4">
+      <CardContent className="flex flex-col gap-6">
+        <CardSection
+          title="Costs"
+          description="What the printer and setup cost you."
+        >
+          <Form orientation="horizontal" className="flex-wrap">
             <FieldInput
-              label={"Years"}
-              placeholder={"Years"}
-              description="Recoup period"
-              name={"years"}
-              value={inputs.years}
-              onChange={(value) => update("years", value)}
-              validate={requiredNumber("Years")}
+              label={"Cost of Printer"}
+              placeholder={"Enter cost of printer"}
+              description="Purchase cost in rupees"
+              name={"printerCost"}
+              value={inputs.printerCost}
+              onChange={(value) => update("printerCost", value)}
+              validate={requiredNumber("Cost of printer")}
+              className="w-48"
             />
-            <span className="pt-6 text-sm text-muted-foreground">and</span>
             <FieldInput
-              label={"Months"}
-              placeholder={"Months"}
-              description="Recoup period"
-              name={"months"}
-              value={inputs.months}
-              onChange={(value) => update("months", value)}
-              validate={requiredNumber("Months")}
+              label={"Additional Cost"}
+              placeholder={"Enter additional cost"}
+              description="Setup, accessories, etc."
+              name={"additionalCost"}
+              value={inputs.additionalCost}
+              onChange={(value) => update("additionalCost", value)}
+              validate={requiredNumber("Additional cost")}
+              className="w-48"
             />
-          </div>
-        </Form>
-      </Card>
+          </Form>
+        </CardSection>
 
-      <Card title="Estimate">
-        <div className="flex w-full flex-col gap-6">
-          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-            {summary.map((line) => (
-              <div
-                key={line.label}
-                className="flex items-center justify-between gap-8"
-              >
-                <span>{line.label}</span>
-                <span className="tabular-nums">{line.value}</span>
-              </div>
-            ))}
+        <Separator />
+
+        <CardSection
+          title="Usage"
+          description="How much you'll run it over the recoup period."
+        >
+          <Form orientation="horizontal" className="flex-wrap items-end">
+            <FieldInput
+              label={"Hourly Usage per Month"}
+              placeholder={"Enter hours per month"}
+              description="Estimated hours used each month"
+              name={"hoursPerMonth"}
+              value={inputs.hoursPerMonth}
+              onChange={(value) => update("hoursPerMonth", value)}
+              validate={requiredNumber("Hourly usage per month")}
+              className="w-56"
+            />
+            <div className="flex items-center gap-4">
+              <FieldInput
+                label={"Years"}
+                placeholder={"Years"}
+                description="Recoup period"
+                name={"years"}
+                value={inputs.years}
+                onChange={(value) => update("years", value)}
+                validate={requiredNumber("Years")}
+                className="w-28"
+              />
+              <div className="text-sm pt-2 self-stretch flex items-center text-muted-foreground">and</div>
+              <FieldInput
+                label={"Months"}
+                placeholder={"Months"}
+                description="Recoup period"
+                name={"months"}
+                value={inputs.months}
+                onChange={(value) => update("months", value)}
+                validate={requiredNumber("Months")}
+                className="w-28"
+              />
+            </div>
+          </Form>
+        </CardSection>
+
+        <Separator />
+
+        <CardSection title="Estimate" description="Your resulting hourly cost.">
+          <div className="flex w-full flex-col gap-6">
+            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+              {summary.map((line) => (
+                <div
+                  key={line.label}
+                  className="flex items-center justify-between gap-8"
+                >
+                  <span>{line.label}</span>
+                  <span className="tabular-nums">{line.value}</span>
+                </div>
+              ))}
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between gap-8 text-base font-semibold">
+              <span>Cost per Hour</span>
+              <span className="tabular-nums">{formatRs(costPerHour)}</span>
+            </div>
           </div>
-          <Separator />
-          <div className="flex items-center justify-between gap-8 text-base font-semibold">
-            <span>Cost per Hour</span>
-            <span className="tabular-nums">{formatRs(costPerHour)}</span>
-          </div>
-        </div>
-      </Card>
-    </div>
+        </CardSection>
+      </CardContent>
+    </Card>
   );
 }

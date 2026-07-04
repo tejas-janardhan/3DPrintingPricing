@@ -1,10 +1,9 @@
 import { FieldInput } from "./fieldInput";
-import { Card } from "./card";
 import { Form } from "./form";
 import { requiredNumber } from "@/lib/validators";
 import type { ProcessingInputs } from "@/types";
 
-export function ProcessingCard({
+export function ProcessingFields({
   processing,
   onChange,
 }: {
@@ -17,8 +16,7 @@ export function ProcessingCard({
   ) => onChange({ ...processing, [field]: value });
 
   return (
-    <Card title="Pre & Post Processing">
-      <Form orientation="vertical">
+    <Form orientation="vertical" className="max-w-md">
         <FieldInput
           label={"3D Processing"}
           placeholder={"Enter Minutes"}
@@ -55,7 +53,6 @@ export function ProcessingCard({
           onChange={(value) => updateWork("partsCost", value)}
           validate={requiredNumber("Parts cost")}
         />
-      </Form>
-    </Card>
+    </Form>
   );
 }

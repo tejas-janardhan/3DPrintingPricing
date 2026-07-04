@@ -3,7 +3,6 @@ import { ChevronDown, Settings2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import FieldSelect from "./fieldSelect";
 import { FieldInput } from "./fieldInput";
-import { Card } from "./card";
 import { Form } from "./form";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
@@ -47,8 +46,8 @@ export function PlateCard({
   ];
 
   return (
-    <Card
-      title={
+    <div className="flex w-72 flex-col gap-6 rounded-lg border bg-muted/30 p-4">
+      <div className="flex items-center justify-between gap-2">
         <input
           type="text"
           aria-label="Plate name"
@@ -56,21 +55,19 @@ export function PlateCard({
           onChange={(event) => updatePlate("name", event.target.value)}
           className="w-full min-w-0 border-b border-transparent bg-transparent font-semibold outline-none transition-colors hover:border-border focus:border-ring"
         />
-      }
-      action={
-        onRemove && (
+        {onRemove && (
           <Button
             variant="ghost"
             size="sm"
             aria-label="Remove plate"
-            className="size-8 px-0 text-muted-foreground hover:bg-transparent hover:text-destructive"
+            className="size-8 shrink-0 px-0 text-muted-foreground hover:bg-transparent hover:text-destructive"
             onClick={onRemove}
           >
             <X className="size-4" />
           </Button>
-        )
-      }
-    >
+        )}
+      </div>
+
       <div className="flex w-full flex-col gap-6">
         {!filamentReady && (
           <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
@@ -189,6 +186,6 @@ export function PlateCard({
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

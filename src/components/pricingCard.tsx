@@ -1,6 +1,5 @@
 import { Info } from "lucide-react";
 import { FieldInput } from "./fieldInput";
-import { Card } from "./card";
 import { Form } from "./form";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -13,7 +12,7 @@ import type {
   Settings,
 } from "@/types";
 
-export function PricingCard({
+export function PricingFields({
   settings,
   plates,
   processing,
@@ -47,8 +46,7 @@ export function PricingCard({
   ];
 
   return (
-    <Card title="Pricing">
-      <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full max-w-md flex-col gap-6">
         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
           {linesBeforeMarkup.map((line) => (
             <div
@@ -116,7 +114,6 @@ export function PricingCard({
             {formatRs(finalPriceIncShipping)}
           </span>
         </div>
-      </div>
-    </Card>
+    </div>
   );
 }
