@@ -7,7 +7,7 @@ import {
 } from "./ui/card";
 
 export function Card(props: {
-  title?: string;
+  title?: ReactNode;
   action?: ReactNode;
   children: ReactElement[] | ReactElement;
 }) {

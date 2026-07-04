@@ -1,7 +1,13 @@
 import { EMPTY_APP_DATA, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
-import type { AppData, Settings } from "@/types";
+import { defaultPlateName } from "@/lib/plates";
+import { migrate, SCHEMA_VERSION } from "./migrations";
+import type { AppData, PlateInputs, PricingInputs, Settings } from "@/types";
 
-const STORAGE_KEY = "3dpp:app-data:v1";
+export type { AppData } from "@/types";
+
+// The persisted payload carries its own `schemaVersion`, so the key is stable
+// across schema versions. Older, version-suffixed keys are relocated once.
+const STORAGE_KEY = "3dpp:app-data";
 
 // We persist to localStorage rather than IndexedDB on purpose: the payload is a
 // handful of small form objects, and localStorage's synchronous reads/writes are
@@ -12,14 +18,34 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
 /**
- * Coerces arbitrary parsed JSON into a valid AppData, filling any missing
- * fields from the empty defaults. Doubles as validation for imported backups.
+ * Coerces arbitrary parsed JSON (already at the current schema version) into a
+ * valid AppData, filling any missing fields from the empty defaults. Doubles as
+ * validation for imported backups. Cross-version upgrades belong in `migrate`.
  */
 export function mergeAppData(input: unknown): AppData {
   if (!isObject(input)) return EMPTY_APP_DATA;
 
   const settings = isObject(input.settings) ? input.settings : {};
   const byFilament = isObject(settings.byFilament) ? settings.byFilament : {};
+
+  const rawPlates = Array.isArray(input.plates) ? input.plates : [];
+  const plates = (rawPlates.length ? rawPlates : [EMPTY_PLATE]).map(
+    (plate, index): PlateInputs => {
+      const source = isObject(plate) ? plate : {};
+      return {
+        ...EMPTY_PLATE,
+        ...(source as Partial<PlateInputs>),
+        id:
+          typeof source.id === "string" && source.id
+            ? source.id
+            : `plate-${index + 1}`,
+        name:
+          typeof source.name === "string" && source.name
+            ? source.name
+            : defaultPlateName(index),
+      };
+    },
+  );
 
   return {
     settings: {
@@ -36,14 +62,14 @@ export function mergeAppData(input: unknown): AppData {
         },
       },
     },
-    plate: { ...EMPTY_PLATE, ...(isObject(input.plate) ? input.plate : {}) },
+    plates,
     processing: {
       ...EMPTY_PROCESSING,
       ...(isObject(input.processing) ? input.processing : {}),
     },
     pricing: {
       ...EMPTY_PRICING,
-      ...(isObject(input.pricing) ? input.pricing : {}),
+      ...(isObject(input.pricing) ? (input.pricing as Partial<PricingInputs>) : {}),
     },
   };
 }
@@ -51,17 +77,29 @@ export function mergeAppData(input: unknown): AppData {
 export function loadAppData(): AppData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return EMPTY_APP_DATA;
-    return mergeAppData(JSON.parse(raw));
+    // `migrate` is version-gated: a no-op once the stored data is current, and
+    // the path that upgrades older-but-current-key data to a newer schema.
+    if (raw) return mergeAppData(migrate(JSON.parse(raw)));
+
+    return EMPTY_APP_DATA;
   } catch (error) {
     console.warn("Failed to load saved data; starting fresh.", error);
     return EMPTY_APP_DATA;
   }
 }
 
+/**
+ * Stamps the current schema version onto the data so that persisted payloads
+ * and exported backups are self-describing — `migrate` reads it to resume from
+ * the right version instead of assuming the oldest.
+ */
+function stampVersion(data: AppData): AppData & { schemaVersion: number } {
+  return { ...data, schemaVersion: SCHEMA_VERSION };
+}
+
 export function saveAppData(data: AppData): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stampVersion(data)));
   } catch (error) {
     // Best-effort autosave: quota/private-mode failures shouldn't break the UI.
     console.error("Failed to save data to localStorage.", error);
@@ -71,8 +109,11 @@ export function saveAppData(data: AppData): void {
 // --- Backup import/export -------------------------------------------------
 
 const BACKUP_APP_ID = "3d-printing-pricing";
+// Version of the backup *envelope* (the { app, version, exportedAt, data }
+// wrapper) — independent of the data's SCHEMA_VERSION, which is carried inside
+// `data` itself. Only bump this if the wrapper structure changes.
 const BACKUP_VERSION = 1;
-const KNOWN_KEYS = ["settings", "plate", "processing", "pricing"] as const;
+const KNOWN_KEYS = ["settings", "plates", "plate", "processing", "pricing"] as const;
 
 export type Backup = {
   app: string;
@@ -86,7 +127,7 @@ export function serializeBackup(data: AppData): string {
     app: BACKUP_APP_ID,
     version: BACKUP_VERSION,
     exportedAt: new Date().toISOString(),
-    data,
+    data: stampVersion(data),
   };
   return JSON.stringify(backup, null, 2);
 }
@@ -118,5 +159,6 @@ export function parseBackup(text: string): AppData {
     throw new Error("The backup file does not contain any pricing data.");
   }
 
-  return mergeAppData(data);
+  // Backups may predate the current schema; migrate before merging.
+  return mergeAppData(migrate(data));
 }

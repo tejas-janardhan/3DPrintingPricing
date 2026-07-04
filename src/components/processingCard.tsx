@@ -2,7 +2,7 @@ import { FieldInput } from "./fieldInput";
 import { Card } from "./card";
 import { Form } from "./form";
 import { requiredNumber } from "@/lib/validators";
-import type { ProcessingInputs } from "@/lib/pricing";
+import type { ProcessingInputs } from "@/types";
 
 export function ProcessingCard({
   processing,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { X } from "lucide-react";
 import FieldSelect from "./fieldSelect";
 import { FieldInput } from "./fieldInput";
 import { Card } from "./card";
@@ -8,24 +9,21 @@ import { Separator } from "./ui/separator";
 import {
   FILAMENT_PRICE_OPTIONS,
   FILAMENT_TYPE_OPTIONS,
-  type FilamentType,
 } from "@/config/constants";
 import { required, requiredNumber } from "@/lib/validators";
-import {
-  computePlateCost,
-  formatRs,
-  type PlateInputs,
-  type Settings,
-} from "@/lib/pricing";
+import { computePlateCost, formatRs } from "@/lib/pricing";
+import type { FilamentType, PlateInputs, Settings } from "@/types";
 
 export function PlateCard({
   settings,
   plate,
   onChange,
+  onRemove,
 }: {
   settings: Settings;
   plate: PlateInputs;
   onChange: (plate: PlateInputs) => void;
+  onRemove?: () => void;
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
 
@@ -44,7 +42,30 @@ export function PlateCard({
   ];
 
   return (
-    <Card title="Plate">
+    <Card
+      title={
+        <input
+          type="text"
+          aria-label="Plate name"
+          value={plate.name}
+          onChange={(event) => updatePlate("name", event.target.value)}
+          className="w-full min-w-0 border-b border-transparent bg-transparent text-gray-50 font-semibold outline-none hover:border-gray-500 focus:border-gray-50"
+        />
+      }
+      action={
+        onRemove && (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Remove plate"
+            className="size-8 px-0 text-gray-300 hover:bg-transparent hover:text-gray-50"
+            onClick={onRemove}
+          >
+            <X className="size-4" />
+          </Button>
+        )
+      }
+    >
       <div className="flex w-full flex-col gap-6">
         <Form orientation="vertical">
           <FieldSelect

@@ -5,15 +5,14 @@ import { Card } from "./card";
 import { Form } from "./form";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
-import { FILAMENT_TYPE_OPTIONS, type FilamentType } from "@/config/constants";
+import { FILAMENT_TYPE_OPTIONS } from "@/config/constants";
 import { requiredNumber } from "@/lib/validators";
-import type { FilamentSettings, Settings } from "@/lib/pricing";
+import type { FilamentSettings, FilamentType, Settings } from "@/types";
 
 type GlobalSettingField =
   | "labourRate"
   | "electricityCost"
   | "multiplier"
-  | "markup"
   | "taxPercent";
 
 export function SettingsCard({
@@ -142,17 +141,6 @@ export function SettingsCard({
             onChange={(value) => updateGlobalSetting("multiplier", value)}
             disabled={!isEditing}
             validate={requiredNumber("Multiplier")}
-            showError={showErrors}
-          />
-          <FieldInput
-            label={"Markup"}
-            placeholder={"Enter Markup"}
-            description="Markup percentage"
-            name={"markup"}
-            value={settings.markup}
-            onChange={(value) => updateGlobalSetting("markup", value)}
-            disabled={!isEditing}
-            validate={requiredNumber("Markup")}
             showError={showErrors}
           />
           <FieldInput

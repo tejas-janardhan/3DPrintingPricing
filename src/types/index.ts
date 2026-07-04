@@ -2,7 +2,7 @@ export type FilamentType = "pla" | "petg";
 
 export type AppData = {
   settings: Settings;
-  plate: PlateInputs;
+  plates: PlateInputs[];
   processing: ProcessingInputs;
   pricing: PricingInputs;
 };
@@ -16,6 +16,7 @@ export type PlateCosts = {
 };
 
 export type PricingInputs = {
+  markup: string;
   shipping: string;
 };
 
@@ -27,6 +28,8 @@ export type ProcessingInputs = {
 };
 
 export type PlateInputs = {
+  id: string;
+  name: string;
   filamentType: FilamentType;
   filamentPrice: string;
   printTimeHours: string;
@@ -43,7 +46,6 @@ export type Settings = {
   labourRate: string;
   electricityCost: string;
   multiplier: string;
-  markup: string;
   taxPercent: string;
   byFilament: Record<FilamentType, FilamentSettings>;
 };

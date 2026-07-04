@@ -1,16 +1,16 @@
 import { createContext, useContext } from "react";
 import type {
+  AppData,
   PlateInputs,
   PricingInputs,
   ProcessingInputs,
   Settings,
-} from "@/lib/pricing";
-import type { AppData } from "./appData";
+} from "@/types";
 
 export type AppStateContextValue = {
   data: AppData;
   setSettings: (settings: Settings) => void;
-  setPlate: (plate: PlateInputs) => void;
+  setPlates: (plates: PlateInputs[]) => void;
   setProcessing: (processing: ProcessingInputs) => void;
   setPricing: (pricing: PricingInputs) => void;
   /** Replace all data, e.g. after importing a backup. */

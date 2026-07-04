@@ -1,25 +1,25 @@
 import { SettingsCard } from "@/components/settingsCard";
-import { PlateCard } from "@/components/plateCard";
+import { PlatesSection } from "@/components/platesSection";
 import { ProcessingCard } from "@/components/processingCard";
 import { PricingCard } from "@/components/pricingCard";
 import { useAppState } from "@/store/appStateContext";
 
 export function CalculatorPage() {
-  const { data, setSettings, setPlate, setProcessing, setPricing } =
+  const { data, setSettings, setPlates, setProcessing, setPricing } =
     useAppState();
 
   return (
     <div className="flex flex-col gap-4">
       <SettingsCard settings={data.settings} onChange={setSettings} />
-      <PlateCard
+      <PlatesSection
         settings={data.settings}
-        plate={data.plate}
-        onChange={setPlate}
+        plates={data.plates}
+        onChange={setPlates}
       />
       <ProcessingCard processing={data.processing} onChange={setProcessing} />
       <PricingCard
         settings={data.settings}
-        plate={data.plate}
+        plates={data.plates}
         processing={data.processing}
         pricing={data.pricing}
         onChange={setPricing}

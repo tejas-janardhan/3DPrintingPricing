@@ -1,5 +1,12 @@
-import { SETUP_TIME_MINUTES } from "@/config/constants";
-import type { FinalPricing, PlateCosts, PlateInputs, PricingInputs, ProcessingInputs, Settings } from "@/types";
+import { MONITORING_RATE, SETUP_TIME_MINUTES } from "@/config/constants";
+import type {
+  FinalPricing,
+  PlateCosts,
+  PlateInputs,
+  PricingInputs,
+  ProcessingInputs,
+  Settings,
+} from "@/types";
 
 export const num = (value: string) => Number(value) || 0;
 
@@ -20,7 +27,7 @@ export function computePlateCost(
   );
   const monitoringCost = Math.ceil(
     num(settings.labourRate) *
-      (0.05 * totalPrintHours + SETUP_TIME_MINUTES / 60),
+      (MONITORING_RATE * totalPrintHours + SETUP_TIME_MINUTES / 60),
   );
   const printUsageCost = Math.ceil(totalPrintHours * plateCostPerHour);
   const electricityCost = Math.ceil(
@@ -46,15 +53,18 @@ export function computePlateCost(
 export function computeFinalPricing({
   settings,
   processing,
-  plate,
+  plates,
   pricing,
 }: {
   settings: Settings;
   processing: ProcessingInputs;
-  plate: PlateInputs;
+  plates: PlateInputs[];
   pricing: PricingInputs;
 }): FinalPricing {
-  const { plateCost } = computePlateCost(settings, plate);
+  const printCost = plates.reduce(
+    (total, plate) => total + computePlateCost(settings, plate).plateCost,
+    0,
+  );
 
   const processingHours =
     num(processing.processingMinutes) / 60 +
@@ -62,9 +72,8 @@ export function computeFinalPricing({
     num(processing.postProcessingMinutes) / 60;
 
   const wageCost = Math.ceil(processingHours * num(settings.labourRate));
-  const printCost = plateCost;
   const lastPrice = wageCost + printCost + num(processing.partsCost);
-  const finalCost = Math.ceil(lastPrice * (1 + num(settings.markup) / 100));
+  const finalCost = Math.ceil(lastPrice * (1 + num(pricing.markup) / 100));
   const tax = Math.ceil((finalCost * num(settings.taxPercent)) / 100);
   const finalPriceIncShipping =
     Math.ceil((finalCost + tax + num(pricing.shipping)) / 10) * 10;

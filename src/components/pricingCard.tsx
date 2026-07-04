@@ -5,24 +5,23 @@ import { Form } from "./form";
 import { Separator } from "./ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { requiredNumber } from "@/lib/validators";
-import {
-  computeFinalPricing,
-  formatRs,
-  type PlateInputs,
-  type PricingInputs,
-  type ProcessingInputs,
-  type Settings,
-} from "@/lib/pricing";
+import { computeFinalPricing, formatRs } from "@/lib/pricing";
+import type {
+  PlateInputs,
+  PricingInputs,
+  ProcessingInputs,
+  Settings,
+} from "@/types";
 
 export function PricingCard({
   settings,
-  plate,
+  plates,
   processing,
   pricing,
   onChange,
 }: {
   settings: Settings;
-  plate: PlateInputs;
+  plates: PlateInputs[];
   processing: ProcessingInputs;
   pricing: PricingInputs;
   onChange: (pricing: PricingInputs) => void;
@@ -34,12 +33,15 @@ export function PricingCard({
     finalCost,
     tax,
     finalPriceIncShipping,
-  } = computeFinalPricing({ settings, processing, plate, pricing });
+  } = computeFinalPricing({ settings, processing, plates, pricing });
 
-  const lines = [
+  const linesBeforeMarkup = [
     { label: "Wage Cost", value: wageCost },
     { label: "Total Print Cost", value: printCost },
     { label: "Last Price", value: lastPrice },
+  ];
+
+  const linesAfterMarkup = [
     { label: "Final Price", value: finalCost },
     { label: "Tax", value: tax },
   ];
@@ -48,7 +50,29 @@ export function PricingCard({
     <Card title="Pricing">
       <div className="flex w-full flex-col gap-6">
         <div className="flex flex-col gap-2 text-sm text-gray-300">
-          {lines.map((line) => (
+          {linesBeforeMarkup.map((line) => (
+            <div
+              key={line.label}
+              className="flex items-center justify-between gap-8"
+            >
+              <span>{line.label}</span>
+              <span className="tabular-nums">{formatRs(line.value)}</span>
+            </div>
+          ))}
+        </div>
+        <Form orientation="vertical">
+          <FieldInput
+            label={"Markup"}
+            placeholder={"Enter Markup"}
+            description="Markup percentage"
+            name={"markup"}
+            value={pricing.markup}
+            onChange={(value) => onChange({ ...pricing, markup: value })}
+            validate={requiredNumber("Markup")}
+          />
+        </Form>
+        <div className="flex flex-col gap-2 text-sm text-gray-300">
+          {linesAfterMarkup.map((line) => (
             <div
               key={line.label}
               className="flex items-center justify-between gap-8"

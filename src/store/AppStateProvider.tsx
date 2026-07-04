@@ -22,8 +22,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     (settings: Settings) => setData((prev) => ({ ...prev, settings })),
     [],
   );
-  const setPlate = useCallback(
-    (plate: PlateInputs) => setData((prev) => ({ ...prev, plate })),
+  const setPlates = useCallback(
+    (plates: PlateInputs[]) => setData((prev) => ({ ...prev, plates })),
     [],
   );
   const setProcessing = useCallback(
@@ -42,7 +42,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     () => ({
       data,
       setSettings,
-      setPlate,
+      setPlates,
       setProcessing,
       setPricing,
       importData,
@@ -51,7 +51,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     [
       data,
       setSettings,
-      setPlate,
+      setPlates,
       setProcessing,
       setPricing,
       importData,
