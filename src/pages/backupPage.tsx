@@ -3,7 +3,12 @@ import { Card } from "@/components/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAppState } from "@/store/appStateContext";
-import { parseBackup, serializeBackup, type AppData } from "@/store/appData";
+import {
+  markBackedUp,
+  parseBackup,
+  serializeBackup,
+  type AppData,
+} from "@/store/appData";
 
 type Status = { type: "success" | "error"; message: string } | null;
 
@@ -30,6 +35,7 @@ export function BackupPage() {
   const handleExport = () => {
     try {
       downloadBackup(data);
+      markBackedUp(data);
       setStatus({ type: "success", message: "Backup downloaded." });
     } catch (error) {
       setStatus({
@@ -47,6 +53,8 @@ export function BackupPage() {
       const text = await file.text();
       const imported = parseBackup(text);
       importData(imported);
+      // The live data now matches this file, so treat it as the saved baseline.
+      markBackedUp(imported);
       setStatus({ type: "success", message: "Backup imported successfully." });
     } catch (error) {
       setStatus({

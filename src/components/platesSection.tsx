@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { PlateCard } from "./plateCard";
 import { Button } from "./ui/button";
+import { MAX_PLATES } from "@/config/constants";
 import { isPlateComplete, makePlate } from "@/lib/plates";
 import type { PlateInputs, Settings } from "@/types";
 
@@ -19,10 +20,15 @@ export function PlatesSection({
   const removePlate = (id: string) =>
     onChange(plates.filter((plate) => plate.id !== id));
 
-  const addPlate = () => onChange([...plates, makePlate(plates.length)]);
+  const atPlateLimit = plates.length >= MAX_PLATES;
+
+  const addPlate = () => {
+    if (atPlateLimit) return;
+    onChange([...plates, makePlate(plates.length)]);
+  };
 
   const lastPlate = plates[plates.length - 1];
-  const canAddPlate = lastPlate ? isPlateComplete(lastPlate) : true;
+  const canAddPlate = !atPlateLimit && (lastPlate ? isPlateComplete(lastPlate) : true);
 
   return (
     <div className="flex flex-wrap items-stretch gap-4">
@@ -35,15 +41,22 @@ export function PlatesSection({
           onRemove={plates.length > 1 ? () => removePlate(plate.id) : undefined}
         />
       ))}
-      <Button
-        variant="outline"
-        disabled={!canAddPlate}
-        onClick={addPlate}
-        className="h-auto self-start text-gray-50"
-      >
-        <Plus className="size-4" />
-        Add Plate
-      </Button>
+      <div className="flex flex-col items-start gap-1 self-start">
+        <Button
+          variant="outline"
+          disabled={!canAddPlate}
+          onClick={addPlate}
+          className="h-auto text-gray-50"
+        >
+          <Plus className="size-4" />
+          Add Plate
+        </Button>
+        {atPlateLimit && (
+          <span className="text-xs text-gray-50">
+            Maximum of {MAX_PLATES} plates reached.
+          </span>
+        )}
+      </div>
     </div>
   );
 }

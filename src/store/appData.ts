@@ -1,5 +1,6 @@
 import { EMPTY_APP_DATA, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
 import { defaultPlateName } from "@/lib/plates";
+import { toast } from "sonner";
 import { migrate, SCHEMA_VERSION } from "./migrations";
 import type { AppData, PlateInputs, PricingInputs, Settings } from "@/types";
 
@@ -84,6 +85,13 @@ export function loadAppData(): AppData {
     return EMPTY_APP_DATA;
   } catch (error) {
     console.warn("Failed to load saved data; starting fresh.", error);
+    // Deferred so the toast fires after the <Toaster /> has mounted (loadAppData
+    // runs during the initial render, before the tree is committed).
+    setTimeout(() => {
+      toast.warning("Couldn't load your saved data", {
+        description: "Starting with a fresh set of inputs.",
+      });
+    }, 0);
     return EMPTY_APP_DATA;
   }
 }
@@ -104,6 +112,45 @@ export function saveAppData(data: AppData): void {
     // Best-effort autosave: quota/private-mode failures shouldn't break the UI.
     console.error("Failed to save data to localStorage.", error);
   }
+}
+
+// --- Last-backup tracking -------------------------------------------------
+
+// Fingerprint of the app data as it stood when the user last exported a backup.
+// Compared against the live data to know whether unsaved work is at risk.
+const LAST_BACKUP_KEY = "3dpp:last-backup";
+
+/**
+ * A stable, content-based fingerprint of the app data (schema version included,
+ * export timestamp excluded) so two snapshots with identical inputs compare equal.
+ */
+function dataFingerprint(data: AppData): string {
+  return JSON.stringify(stampVersion(data));
+}
+
+/** Records the current data as the last-exported state. Best-effort. */
+export function markBackedUp(data: AppData): void {
+  try {
+    localStorage.setItem(LAST_BACKUP_KEY, dataFingerprint(data));
+  } catch (error) {
+    console.error("Failed to record last-backup state.", error);
+  }
+}
+
+/**
+ * Whether the live data differs from the last exported backup — i.e. there is
+ * unsaved work that would be lost. With no backup ever taken, only non-empty
+ * data counts as stale (so a pristine app doesn't nag).
+ */
+export function isBackupStale(data: AppData): boolean {
+  let last: string | null = null;
+  try {
+    last = localStorage.getItem(LAST_BACKUP_KEY);
+  } catch {
+    // If we can't read the marker, fall through to the empty-data baseline.
+  }
+  const baseline = last ?? dataFingerprint(EMPTY_APP_DATA);
+  return dataFingerprint(data) !== baseline;
 }
 
 // --- Backup import/export -------------------------------------------------

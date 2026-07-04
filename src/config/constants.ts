@@ -61,3 +61,9 @@ export const EMPTY_APP_DATA: AppData = {
 
 export const SETUP_TIME_MINUTES = 5;
 export const MONITORING_RATE = 0.05; // percent of the print time spent monitoring.
+
+// Maximum number of plates a user can add.
+export const MAX_PLATES = 10;
+
+// How often to remind the user to back up when there are unsaved changes.
+export const BACKUP_REMINDER_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes

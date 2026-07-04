@@ -3,8 +3,11 @@ import { Layout } from "./layout";
 import { Nav } from "./components/nav";
 import { CalculatorPage } from "./pages/calculatorPage";
 import { BackupPage } from "./pages/backupPage";
+import { useBackupReminder } from "./hooks/useBackupReminder";
 
 function App() {
+  useBackupReminder();
+
   return (
     <Layout>
       <Nav />
