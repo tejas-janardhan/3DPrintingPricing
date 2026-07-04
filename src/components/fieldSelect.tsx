@@ -25,6 +25,7 @@ const FieldSelect = (params: {
   validate?: Validator;
   showError?: boolean;
   disabled?: boolean;
+  className?: string;
 }) => {
   const {
     name,
@@ -37,6 +38,7 @@ const FieldSelect = (params: {
     validate,
     showError,
     disabled,
+    className,
   } = params;
   const [selected, setSelected] = useState<string>();
   const [touched, setTouched] = useState(false);
@@ -51,7 +53,7 @@ const FieldSelect = (params: {
   };
 
   return (
-    <Field data-invalid={error ? "true" : undefined}>
+    <Field className={className} data-invalid={error ? "true" : undefined}>
       <FieldLabel>{label}</FieldLabel>
       <div className="flex flex-col gap-1">
         <Select
@@ -60,7 +62,10 @@ const FieldSelect = (params: {
           onValueChange={handleChange}
           disabled={disabled}
         >
-          <SelectTrigger aria-invalid={error ? true : undefined}>
+          <SelectTrigger
+            className="w-full"
+            aria-invalid={error ? true : undefined}
+          >
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
