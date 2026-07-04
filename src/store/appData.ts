@@ -1,27 +1,5 @@
-import {
-  EMPTY_PLATE,
-  EMPTY_PRICING,
-  EMPTY_PROCESSING,
-  EMPTY_SETTINGS,
-  type PlateInputs,
-  type PricingInputs,
-  type ProcessingInputs,
-  type Settings,
-} from "@/lib/pricing";
-
-export type AppData = {
-  settings: Settings;
-  plate: PlateInputs;
-  processing: ProcessingInputs;
-  pricing: PricingInputs;
-};
-
-export const EMPTY_APP_DATA: AppData = {
-  settings: EMPTY_SETTINGS,
-  plate: EMPTY_PLATE,
-  processing: EMPTY_PROCESSING,
-  pricing: EMPTY_PRICING,
-};
+import { EMPTY_APP_DATA, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
+import type { AppData, Settings } from "@/types";
 
 const STORAGE_KEY = "3dpp:app-data:v1";
 

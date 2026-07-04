@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import type {
-  PlateInputs,
-  PricingInputs,
-  ProcessingInputs,
-  Settings,
-} from "@/lib/pricing";
-import { EMPTY_APP_DATA, loadAppData, saveAppData, type AppData } from "./appData";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { loadAppData, saveAppData } from "./appData";
 import { AppStateContext } from "./appStateContext";
+import type { AppData, PlateInputs, PricingInputs, ProcessingInputs, Settings } from "@/types";
+import { EMPTY_APP_DATA } from "@/config/constants";
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(() => loadAppData());
