@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import {
   Card as CardShadCn,
   CardHeader,
@@ -8,13 +8,15 @@ import {
 
 export function Card(props: {
   title?: string;
+  action?: ReactNode;
   children: ReactElement[] | ReactElement;
 }) {
   return (
     <CardShadCn className="bg-gray-800 w-fit p-4">
       {props.title && (
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>{props.title}</CardTitle>
+          {props.action}
         </CardHeader>
       )}
       <CardContent>{props.children}</CardContent>
