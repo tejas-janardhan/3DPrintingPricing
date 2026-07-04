@@ -10,6 +10,7 @@ import {
 
 const LINKS: { label: string; to: string }[] = [
   { label: "Calculator", to: "/" },
+  { label: "Settings", to: "/settings" },
   { label: "Backup", to: "/backup" },
 ];
 
@@ -26,8 +27,8 @@ export function Nav() {
                 className={({ isActive }) =>
                   cn(
                     navigationMenuTriggerStyle(),
-                    "bg-transparent text-gray-400 hover:bg-gray-800 hover:text-gray-50 focus:bg-gray-800 focus:text-gray-50",
-                    isActive && "bg-gray-800 text-gray-50",
+                    "bg-transparent text-gray-400 hover:bg-gray-800 hover:text-gray-50! focus:bg-gray-800 focus:text-gray-50!",
+                    isActive && "bg-gray-800 text-gray-50! focus:text-gray-50!",
                   )
                 }
               >
