@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { Info } from "lucide-react";
 import { FieldInput } from "./fieldInput";
 import { Card } from "./card";
 import { Form } from "./form";
 import { Separator } from "./ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { requiredNumber } from "@/lib/validators";
 import {
-  computePlateCost,
+  computeFinalPricing,
   formatRs,
-  num,
   type PlateInputs,
+  type PricingInputs,
   type ProcessingInputs,
   type Settings,
 } from "@/lib/pricing";
@@ -17,26 +18,23 @@ export function PricingCard({
   settings,
   plate,
   processing,
+  pricing,
+  onChange,
 }: {
   settings: Settings;
   plate: PlateInputs;
   processing: ProcessingInputs;
+  pricing: PricingInputs;
+  onChange: (pricing: PricingInputs) => void;
 }) {
-  const [shipping, setShipping] = useState("");
-
-  const { plateCost } = computePlateCost(settings, plate);
-
-  const processingHours =
-    num(processing.processingMinutes) / 60 +
-    num(processing.postProcessingHours) +
-    num(processing.postProcessingMinutes) / 60;
-
-  const wageCost = Math.ceil(processingHours * num(settings.labourRate));
-  const printCost = plateCost;
-  const lastPrice = wageCost + printCost;
-  const finalCost = Math.ceil(lastPrice * (1 + num(settings.markup) / 100));
-  const tax = Math.ceil((finalCost * num(settings.taxPercent)) / 100);
-  const finalPriceIncShipping = Math.ceil(finalCost + tax + num(shipping));
+  const {
+    wageCost,
+    printCost,
+    lastPrice,
+    finalCost,
+    tax,
+    finalPriceIncShipping,
+  } = computeFinalPricing({ settings, processing, plate, pricing });
 
   const lines = [
     { label: "Wage Cost", value: wageCost },
@@ -66,14 +64,30 @@ export function PricingCard({
             placeholder={"Enter Shipping And Handling Cost"}
             description="Cost in rupees"
             name={"shipping"}
-            value={shipping}
-            onChange={setShipping}
+            value={pricing.shipping}
+            onChange={(value) => onChange({ ...pricing, shipping: value })}
             validate={requiredNumber("Shipping and handling cost")}
           />
         </Form>
         <Separator className="bg-white" />
         <div className="flex items-center justify-between gap-8 text-base font-semibold text-gray-50">
-          <span>Final Price Inc Shipping</span>
+          <span className="flex items-center gap-1.5">
+            Final Price Inc Shipping
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Final price info"
+                  className="text-gray-50"
+                >
+                  <Info className="size-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Price is rounded up to the nearest 10.
+              </TooltipContent>
+            </Tooltip>
+          </span>
           <span className="tabular-nums">
             {formatRs(finalPriceIncShipping)}
           </span>

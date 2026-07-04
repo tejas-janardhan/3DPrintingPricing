@@ -56,6 +56,14 @@ export const EMPTY_PROCESSING: ProcessingInputs = {
   partsCost: "",
 };
 
+export type PricingInputs = {
+  shipping: string;
+};
+
+export const EMPTY_PRICING: PricingInputs = {
+  shipping: "",
+};
+
 export const SETUP_TIME_MINUTES = 5;
 
 export const num = (value: string) => Number(value) || 0;
@@ -105,5 +113,52 @@ export function computePlateCost(
     printUsageCost,
     electricityCost,
     plateCost,
+  };
+}
+
+export type FinalPricing = {
+  wageCost: number;
+  printCost: number;
+  lastPrice: number;
+  finalCost: number;
+  tax: number;
+  finalPriceIncShipping: number;
+};
+
+export function computeFinalPricing({
+  settings,
+  processing,
+  plate,
+  pricing,
+}: {
+  settings: Settings;
+  processing: ProcessingInputs;
+  plate: PlateInputs;
+  pricing: PricingInputs;
+}): FinalPricing {
+  console.log({ pricing });
+
+  const { plateCost } = computePlateCost(settings, plate);
+
+  const processingHours =
+    num(processing.processingMinutes) / 60 +
+    num(processing.postProcessingHours) +
+    num(processing.postProcessingMinutes) / 60;
+
+  const wageCost = Math.ceil(processingHours * num(settings.labourRate));
+  const printCost = plateCost;
+  const lastPrice = wageCost + printCost + num(processing.partsCost);
+  const finalCost = Math.ceil(lastPrice * (1 + num(settings.markup) / 100));
+  const tax = Math.ceil((finalCost * num(settings.taxPercent)) / 100);
+  const finalPriceIncShipping =
+    Math.ceil((finalCost + tax + num(pricing.shipping)) / 10) * 10;
+
+  return {
+    wageCost,
+    printCost,
+    lastPrice,
+    finalCost,
+    tax,
+    finalPriceIncShipping,
   };
 }

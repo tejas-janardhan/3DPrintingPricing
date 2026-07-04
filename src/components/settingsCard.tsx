@@ -79,7 +79,7 @@ export function SettingsCard({
           <FieldInput
             label={"Cost per hour"}
             placeholder={"Enter Cost per hour"}
-            description="Cost per hour"
+            description="Cost of printing per hour"
             name={"costPerHour"}
             value={currentSettings.costPerHour}
             onChange={(value) => updateSetting("costPerHour", value)}

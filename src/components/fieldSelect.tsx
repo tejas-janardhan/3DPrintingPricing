@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "./ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "./ui/field";
 import {
   Select,
   SelectContent,
@@ -30,12 +25,22 @@ const FieldSelect = (params: {
   validate?: Validator;
   showError?: boolean;
 }) => {
-  const { name, options, label, description, placeholder, value, onValueChange, validate, showError } =
-    params;
+  const {
+    name,
+    options,
+    label,
+    description,
+    placeholder,
+    value,
+    onValueChange,
+    validate,
+    showError,
+  } = params;
   const [selected, setSelected] = useState<string>();
   const [touched, setTouched] = useState(false);
   const current = value ?? selected;
-  const error = (touched || showError) && validate ? validate(current ?? "") : undefined;
+  const error =
+    (touched || showError) && validate ? validate(current ?? "") : undefined;
 
   const handleChange = (next: string) => {
     setSelected(next);
@@ -46,30 +51,32 @@ const FieldSelect = (params: {
   return (
     <Field className="text-gray-50" data-invalid={error ? "true" : undefined}>
       <FieldLabel>{label}</FieldLabel>
-      <Select name={name} value={value} onValueChange={handleChange}>
-        <SelectTrigger
-          className="border-gray-50 data-placeholder:text-gray-50"
-          aria-invalid={error ? true : undefined}
-        >
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value.toString()}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {error ? (
-        <FieldError>{error}</FieldError>
-      ) : (
-        description && (
-          <FieldDescription className="text-gray-50">
-            {description}
-          </FieldDescription>
-        )
-      )}
+      <div className="flex flex-col gap-1">
+        <Select name={name} value={value} onValueChange={handleChange}>
+          <SelectTrigger
+            className="border-gray-50 data-placeholder:text-gray-50"
+            aria-invalid={error ? true : undefined}
+          >
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value.toString()}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {error ? (
+          <FieldError className="text-xs">{error}</FieldError>
+        ) : (
+          description && (
+            <FieldDescription className="text-gray-50 text-xs">
+              {description}
+            </FieldDescription>
+          )
+        )}
+      </div>
     </Field>
   );
 };

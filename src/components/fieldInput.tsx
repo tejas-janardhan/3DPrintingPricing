@@ -21,12 +21,23 @@ export function FieldInput(props: {
   className?: string;
   showError?: boolean;
 }) {
-  const { name, label, description, placeholder, value, onChange, disabled, validate, className, showError } =
-    props;
+  const {
+    name,
+    label,
+    description,
+    placeholder,
+    value,
+    onChange,
+    disabled,
+    validate,
+    className,
+    showError,
+  } = props;
   const [internal, setInternal] = useState("");
   const [touched, setTouched] = useState(false);
   const current = value ?? internal;
-  const error = (touched || showError) && validate ? validate(current) : undefined;
+  const error =
+    (touched || showError) && validate ? validate(current) : undefined;
 
   const handleChange = (next: string) => {
     if (value === undefined) setInternal(next);
@@ -39,27 +50,29 @@ export function FieldInput(props: {
       data-invalid={error ? "true" : undefined}
     >
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
-      <Input
-        id={name}
-        name={name}
-        type="text"
-        className="border-gray-50 placeholder:text-gray-50"
-        placeholder={placeholder}
-        value={current}
-        disabled={disabled}
-        aria-invalid={error ? true : undefined}
-        onChange={(e) => handleChange(e.target.value)}
-        onBlur={() => setTouched(true)}
-      />
-      {error ? (
-        <FieldError>{error}</FieldError>
-      ) : (
-        description && (
-          <FieldDescription className="text-gray-50">
-            {description}
-          </FieldDescription>
-        )
-      )}
+      <div className="flex flex-col gap-1">
+        <Input
+          id={name}
+          name={name}
+          type="text"
+          className="border-gray-50 placeholder:text-gray-50"
+          placeholder={placeholder}
+          value={current}
+          disabled={disabled}
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => handleChange(e.target.value)}
+          onBlur={() => setTouched(true)}
+        />
+        {error ? (
+          <FieldError className="text-xs">{error}</FieldError>
+        ) : (
+          description && (
+            <FieldDescription className="text-gray-50 text-xs">
+              {description}
+            </FieldDescription>
+          )
+        )}
+      </div>
     </Field>
   );
 }
