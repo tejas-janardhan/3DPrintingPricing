@@ -80,8 +80,8 @@ export function BackupPage() {
 
   return (
     <Card title="Backup & Restore">
-      <div className="flex w-full max-w-md flex-col gap-6 text-gray-50">
-        <p className="text-sm text-gray-300">
+      <div className="flex w-full max-w-md flex-col gap-6">
+        <p className="text-sm text-muted-foreground">
           Your data is saved automatically in this browser. Use export to keep a
           copy, or import to restore it on another device.
         </p>
@@ -90,8 +90,8 @@ export function BackupPage() {
             role="status"
             className={
               status.type === "error"
-                ? "rounded-md border border-red-400 bg-red-950/40 px-3 py-2 text-sm text-red-200"
-                : "rounded-md border border-emerald-400 bg-emerald-950/40 px-3 py-2 text-sm text-emerald-200"
+                ? "rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+                : "rounded-md border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400"
             }
           >
             {status.message}
@@ -99,22 +99,22 @@ export function BackupPage() {
         )}
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium">Export</span>
-          <p className="text-sm text-gray-300">
+          <p className="text-sm text-muted-foreground">
             Download all your settings and inputs as a JSON file.
           </p>
           <Button
             variant="outline"
             size="sm"
-            className="self-start text-gray-50"
+            className="self-start"
             onClick={handleExport}
           >
             Download backup
           </Button>
         </div>
-        <Separator className="bg-white" />
+        <Separator />
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium">Import</span>
-          <p className="text-sm text-gray-300">
+          <p className="text-sm text-muted-foreground">
             Restore data from a previously exported backup file. This replaces
             your current data.
           </p>
@@ -128,26 +128,26 @@ export function BackupPage() {
           <Button
             variant="outline"
             size="sm"
-            className="self-start text-gray-50"
+            className="self-start"
             onClick={() => fileInputRef.current?.click()}
           >
             Choose backup file
           </Button>
         </div>
 
-        <Separator className="bg-white" />
+        <Separator />
 
         <div className="flex flex-col gap-2">
           <span className="text-sm font-medium">Reset</span>
-          <p className="text-sm text-gray-300">
+          <p className="text-sm text-muted-foreground">
             Clear all saved settings and inputs. This cannot be undone.
           </p>
           {confirmingReset ? (
             <div className="flex items-center gap-2">
               <Button
-                variant="outline"
+                variant="destructive"
                 size="sm"
-                className="self-start border-red-400 text-red-200 hover:bg-red-950/40 hover:text-red-100"
+                className="self-start"
                 onClick={handleReset}
               >
                 Yes, clear everything
@@ -155,7 +155,7 @@ export function BackupPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="self-start text-gray-300 hover:text-gray-50"
+                className="self-start text-muted-foreground hover:text-foreground"
                 onClick={() => setConfirmingReset(false)}
               >
                 Cancel
@@ -163,9 +163,9 @@ export function BackupPage() {
             </div>
           ) : (
             <Button
-              variant="outline"
+              variant="destructive"
               size="sm"
-              className="self-start border-red-400 text-red-200 hover:bg-red-950/40 hover:text-red-100"
+              className="self-start"
               onClick={() => setConfirmingReset(true)}
             >
               Clear all data

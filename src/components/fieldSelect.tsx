@@ -49,14 +49,11 @@ const FieldSelect = (params: {
   };
 
   return (
-    <Field className="text-gray-50" data-invalid={error ? "true" : undefined}>
+    <Field data-invalid={error ? "true" : undefined}>
       <FieldLabel>{label}</FieldLabel>
       <div className="flex flex-col gap-1">
         <Select name={name} value={value} onValueChange={handleChange}>
-          <SelectTrigger
-            className="border-gray-50 data-placeholder:text-gray-50"
-            aria-invalid={error ? true : undefined}
-          >
+          <SelectTrigger aria-invalid={error ? true : undefined}>
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
@@ -71,7 +68,7 @@ const FieldSelect = (params: {
           <FieldError className="text-xs">{error}</FieldError>
         ) : (
           description && (
-            <FieldDescription className="text-gray-50 text-xs">
+            <FieldDescription className="text-xs">
               {description}
             </FieldDescription>
           )

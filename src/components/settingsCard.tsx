@@ -51,7 +51,6 @@ export function SettingsCard({
         <Button
           variant="outline"
           size="sm"
-          className="text-gray-50"
           onClick={() => {
             setShowErrors(isEditing);
             setIsEditing((editing) => !editing);
@@ -101,7 +100,7 @@ export function SettingsCard({
           />
           <Separator
             orientation="vertical"
-            className="self-stretch bg-white data-[orientation=vertical]:h-auto"
+            className="self-stretch data-[orientation=vertical]:h-auto"
           />
           <FieldInput
             label={"Labour Rate"}
@@ -129,7 +128,7 @@ export function SettingsCard({
           />
         </Form>
 
-        <Separator className="bg-white" />
+        <Separator />
 
         <Form orientation="horizontal">
           <FieldInput

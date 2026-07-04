@@ -12,10 +12,10 @@ export function Card(props: {
   children: ReactElement[] | ReactElement;
 }) {
   return (
-    <CardShadCn className="bg-gray-800 w-fit">
+    <CardShadCn className="w-fit">
       {props.title && (
         <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle className="text-gray-50">{props.title}</CardTitle>
+          <CardTitle>{props.title}</CardTitle>
           {props.action}
         </CardHeader>
       )}

@@ -49,7 +49,7 @@ export function PlateCard({
           aria-label="Plate name"
           value={plate.name}
           onChange={(event) => updatePlate("name", event.target.value)}
-          className="w-full min-w-0 border-b border-transparent bg-transparent text-gray-50 font-semibold outline-none hover:border-gray-500 focus:border-gray-50"
+          className="w-full min-w-0 border-b border-transparent bg-transparent font-semibold outline-none transition-colors hover:border-border focus:border-ring"
         />
       }
       action={
@@ -58,7 +58,7 @@ export function PlateCard({
             variant="ghost"
             size="sm"
             aria-label="Remove plate"
-            className="size-8 px-0 text-gray-300 hover:bg-transparent hover:text-gray-50"
+            className="size-8 px-0 text-muted-foreground hover:bg-transparent hover:text-destructive"
             onClick={onRemove}
           >
             <X className="size-4" />
@@ -124,11 +124,11 @@ export function PlateCard({
           />
         </Form>
 
-        <Separator className="bg-white" />
+        <Separator />
 
-        <div className="flex flex-col gap-3 text-gray-50">
+        <div className="flex flex-col gap-3">
           {showBreakdown && (
-            <div className="flex flex-col gap-2 text-sm text-gray-400">
+            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               {costBreakdown.map((item) => (
                 <div
                   key={item.label}
@@ -143,7 +143,7 @@ export function PlateCard({
           <Button
             variant="ghost"
             size="sm"
-            className="self-start text-xs px-0 text-gray-300 hover:bg-transparent hover:text-gray-50"
+            className="self-start text-xs px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
             onClick={() => setShowBreakdown((shown) => !shown)}
           >
             {showBreakdown ? "Hide breakdown" : "See breakdown"}

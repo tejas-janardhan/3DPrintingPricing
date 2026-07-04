@@ -4,22 +4,20 @@ A React + Vite + TypeScript app for calculating 3D print pricing, using Tailwind
 
 ## UI Color Theme
 
-The app uses a **dark card / light text** theme. Cards sit on a dark surface, and all foreground content (titles, labels, input text, descriptions, borders, placeholders, and buttons) is near-white.
+The app uses **shadcn semantic color tokens** with a **Blue** accent palette, and supports **light and dark mode**. The palette is defined once as CSS variables in [index.css](src/index.css) (`:root` for light, `.dark` for dark) and every component consumes the semantic tokens — never hardcoded Tailwind colors like `gray-*`, `bg-white`, or `text-black`.
 
-Use these conventions on any new UI so it stays consistent:
+### Rules
+- **Never** use fixed Tailwind palette colors (`gray-*`, `slate-*`, `white`, `black`, `red-400`, …) for surfaces, text, or borders. They break light/dark mode.
+- Use semantic tokens instead:
+  - **Surfaces**: `bg-background` (page), `bg-card` (cards), `bg-popover`, `bg-muted`, `bg-accent`
+  - **Text**: default inherits `text-foreground`; use `text-muted-foreground` for secondary text, `text-primary` for accent, `text-destructive` for errors
+  - **Borders**: `border` / `border-border`, `border-input` on inputs; focus rings use `ring` / `border-ring`
+  - **Buttons**: use the shadcn `Button` `variant` prop (`outline`, `ghost`, `destructive`, …) rather than color classes
+- To change the accent, edit the `--primary` / `--accent` / `--ring` / `--chart-1` variables in [index.css](src/index.css) — nothing else.
 
-- **Card surface**: `bg-gray-800` (see [card.tsx](src/components/card.tsx))
-- **Foreground text** (titles, labels, input/select text, descriptions): `text-gray-50`
-- **Borders** (inputs, select triggers): `border-gray-50`
-- **Placeholders**: `placeholder:text-gray-50` for inputs, `data-placeholder:text-gray-50` for select triggers
-- **Buttons** (e.g. Edit/Done action): `text-gray-50`
+### Light/dark mode
+- [theme-provider.tsx](src/components/theme-provider.tsx) — holds the theme, toggles the `.dark` class on `<html>`, and persists the choice to `localStorage` (falls back to the OS preference). Wraps the app in [main.tsx](src/main.tsx).
+- [themeToggle.tsx](src/components/themeToggle.tsx) — sun/moon icon button, rendered in [nav.tsx](src/components/nav.tsx).
+- Use `useTheme()` if a component needs the current theme (e.g. [ui/sonner.tsx](src/components/ui/sonner.tsx)).
 
-These overrides are applied via `className` on the shadcn base components (which use `cn`/`tailwind-merge`, so the override wins over the component defaults such as `border-input` and `text-muted-foreground`).
-
-### Where it's applied
-- [card.tsx](src/components/card.tsx) — `bg-gray-800` surface, `text-gray-50` title
-- [fieldInput.tsx](src/components/fieldInput.tsx) — `text-gray-50` on the field, `border-gray-50 placeholder:text-gray-50` on the input, `text-gray-50` description
-- [fieldSelect.tsx](src/components/fieldSelect.tsx) — `text-gray-50` on the field, `border-gray-50 data-placeholder:text-gray-50` on the trigger, `text-gray-50` description
-- [App.tsx](src/App.tsx) — Edit/Done button uses `text-gray-50`
-
-When adding new fields, buttons, or cards, reuse the `FieldInput` / `FieldSelect` / `Card` wrappers so the theme is inherited automatically.
+When adding new fields, buttons, or cards, reuse the `FieldInput` / `FieldSelect` / `Card` wrappers so the tokens are inherited automatically.

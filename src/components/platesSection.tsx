@@ -46,13 +46,13 @@ export function PlatesSection({
           variant="outline"
           disabled={!canAddPlate}
           onClick={addPlate}
-          className="h-auto text-gray-50"
+          className="h-auto"
         >
           <Plus className="size-4" />
           Add Plate
         </Button>
         {atPlateLimit && (
-          <span className="text-xs text-gray-50">
+          <span className="text-xs text-muted-foreground">
             Maximum of {MAX_PLATES} plates reached.
           </span>
         )}

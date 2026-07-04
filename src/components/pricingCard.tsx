@@ -49,7 +49,7 @@ export function PricingCard({
   return (
     <Card title="Pricing">
       <div className="flex w-full flex-col gap-6">
-        <div className="flex flex-col gap-2 text-sm text-gray-300">
+        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
           {linesBeforeMarkup.map((line) => (
             <div
               key={line.label}
@@ -71,7 +71,7 @@ export function PricingCard({
             validate={requiredNumber("Markup")}
           />
         </Form>
-        <div className="flex flex-col gap-2 text-sm text-gray-300">
+        <div className="flex flex-col gap-2 text-sm text-muted-foreground">
           {linesAfterMarkup.map((line) => (
             <div
               key={line.label}
@@ -93,8 +93,8 @@ export function PricingCard({
             validate={requiredNumber("Shipping and handling cost")}
           />
         </Form>
-        <Separator className="bg-white" />
-        <div className="flex items-center justify-between gap-8 text-base font-semibold text-gray-50">
+        <Separator />
+        <div className="flex items-center justify-between gap-8 text-base font-semibold">
           <span className="flex items-center gap-1.5">
             Final Price Inc Shipping
             <Tooltip>
@@ -102,7 +102,7 @@ export function PricingCard({
                 <button
                   type="button"
                   aria-label="Final price info"
-                  className="text-gray-50"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <Info className="size-4" />
                 </button>
