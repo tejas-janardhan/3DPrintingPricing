@@ -3,5 +3,5 @@ import type { FC, ReactElement } from "react";
 export const Layout: FC<{ children: ReactElement[] | ReactElement }> = ({
   children,
 }) => {
-  return <div className="w-screen h-screen p-4 bg-gray-950 overflow-auto">{children}</div>;
+  return <div className="w-screen h-screen min-w-[800px] p-4 bg-gray-950 overflow-auto">{children}</div>;
 };

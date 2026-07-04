@@ -28,13 +28,14 @@ const FieldSelect = (params: {
   value?: string;
   onValueChange?: (value: string) => void;
   validate?: Validator;
+  showError?: boolean;
 }) => {
-  const { name, options, label, description, placeholder, value, onValueChange, validate } =
+  const { name, options, label, description, placeholder, value, onValueChange, validate, showError } =
     params;
   const [selected, setSelected] = useState<string>();
   const [touched, setTouched] = useState(false);
   const current = value ?? selected;
-  const error = touched && validate ? validate(current ?? "") : undefined;
+  const error = (touched || showError) && validate ? validate(current ?? "") : undefined;
 
   const handleChange = (next: string) => {
     setSelected(next);
@@ -46,7 +47,10 @@ const FieldSelect = (params: {
     <Field className="text-gray-50" data-invalid={error ? "true" : undefined}>
       <FieldLabel>{label}</FieldLabel>
       <Select name={name} value={value} onValueChange={handleChange}>
-        <SelectTrigger aria-invalid={error ? true : undefined}>
+        <SelectTrigger
+          className="border-gray-50 data-placeholder:text-gray-50"
+          aria-invalid={error ? true : undefined}
+        >
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>

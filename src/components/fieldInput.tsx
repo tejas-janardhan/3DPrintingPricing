@@ -6,6 +6,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import type { Validator } from "@/lib/validators";
 
 export function FieldInput(props: {
@@ -17,13 +18,15 @@ export function FieldInput(props: {
   onChange?: (value: string) => void;
   disabled?: boolean;
   validate?: Validator;
+  className?: string;
+  showError?: boolean;
 }) {
-  const { name, label, description, placeholder, value, onChange, disabled, validate } =
+  const { name, label, description, placeholder, value, onChange, disabled, validate, className, showError } =
     props;
   const [internal, setInternal] = useState("");
   const [touched, setTouched] = useState(false);
   const current = value ?? internal;
-  const error = touched && validate ? validate(current) : undefined;
+  const error = (touched || showError) && validate ? validate(current) : undefined;
 
   const handleChange = (next: string) => {
     if (value === undefined) setInternal(next);
@@ -31,12 +34,16 @@ export function FieldInput(props: {
   };
 
   return (
-    <Field data-invalid={error ? "true" : undefined}>
+    <Field
+      className={cn("text-gray-50", className)}
+      data-invalid={error ? "true" : undefined}
+    >
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
       <Input
         id={name}
         name={name}
         type="text"
+        className="border-gray-50 placeholder:text-gray-50"
         placeholder={placeholder}
         value={current}
         disabled={disabled}
@@ -47,7 +54,11 @@ export function FieldInput(props: {
       {error ? (
         <FieldError>{error}</FieldError>
       ) : (
-        description && <FieldDescription>{description}</FieldDescription>
+        description && (
+          <FieldDescription className="text-gray-50">
+            {description}
+          </FieldDescription>
+        )
       )}
     </Field>
   );
