@@ -13,15 +13,23 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Separator } from "./ui/separator";
-import { FILAMENT_TYPE_OPTIONS } from "@/config/constants";
+import { FILAMENT_TYPE_OPTIONS, PRINTER_TYPE_OPTIONS } from "@/config/constants";
 import { requiredNumber } from "@/lib/validators";
-import type { FilamentSettings, FilamentType, Settings } from "@/types";
+import type {
+  FilamentSettings,
+  FilamentType,
+  PrinterSettings,
+  PrinterType,
+  Settings,
+} from "@/types";
 
 type GlobalSettingField =
   | "labourRate"
   | "electricityCost"
   | "multiplier"
-  | "taxPercent";
+  | "taxPercent"
+  | "defaultMarkup"
+  | "defaultShipping";
 
 export function SettingsCard({
   settings,
@@ -32,10 +40,13 @@ export function SettingsCard({
 }) {
   // Which filament type the per-filament fields apply to
   const [settingsType, setSettingsType] = useState<FilamentType>("pla");
+  // Which printer type the per-printer fields apply to
+  const [printerType, setPrinterType] = useState<PrinterType>("bambuLabA1");
   const [isEditing, setIsEditing] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
 
   const currentSettings = settings.byFilament[settingsType];
+  const currentPrinter = settings.byPrinter[printerType];
 
   const updateSetting = (field: keyof FilamentSettings, value: string) =>
     onChange({
@@ -44,6 +55,18 @@ export function SettingsCard({
         ...settings.byFilament,
         [settingsType]: {
           ...settings.byFilament[settingsType],
+          [field]: value,
+        },
+      },
+    });
+
+  const updatePrinterSetting = (field: keyof PrinterSettings, value: string) =>
+    onChange({
+      ...settings,
+      byPrinter: {
+        ...settings.byPrinter,
+        [printerType]: {
+          ...settings.byPrinter[printerType],
           [field]: value,
         },
       },
@@ -157,6 +180,41 @@ export function SettingsCard({
         <Separator />
 
         <CardSection
+          title="Printer Config"
+          description="Setup effort specific to each printer."
+        >
+          <Form orientation="horizontal" className="flex-wrap">
+            <FieldSelect
+              options={PRINTER_TYPE_OPTIONS}
+              label={"Printer Type"}
+              placeholder={"Select Printer Type"}
+              description="Settings apply to this printer"
+              name={"settingsPrinterType"}
+              value={printerType}
+              onValueChange={(value) => {
+                setShowErrors(false);
+                setPrinterType(value as PrinterType);
+              }}
+              className="w-52"
+            />
+            <FieldInput
+              label={"Setup Time"}
+              placeholder={"Enter Setup Time"}
+              description="Setup minutes per plate"
+              name={"setupTimeMinutes"}
+              value={currentPrinter.setupTimeMinutes}
+              onChange={(value) => updatePrinterSetting("setupTimeMinutes", value)}
+              disabled={!isEditing}
+              validate={requiredNumber("Setup time")}
+              showError={showErrors}
+              className="w-48"
+            />
+          </Form>
+        </CardSection>
+
+        <Separator />
+
+        <CardSection
           title="Pricing"
           description="Markup and tax applied to every quote."
         >
@@ -183,6 +241,36 @@ export function SettingsCard({
               disabled={!isEditing}
               validate={requiredNumber("Tax percent")}
               showError={showErrors}
+              className="w-48"
+            />
+          </Form>
+        </CardSection>
+
+        <Separator />
+
+        <CardSection
+          title="Default Pricing"
+          description="Pre-filled into each new quote's pricing."
+        >
+          <Form orientation="horizontal" className="flex-wrap">
+            <FieldInput
+              label={"Default Markup"}
+              placeholder={"Enter Default Markup"}
+              description="Markup % seeded on new quotes"
+              name={"defaultMarkup"}
+              value={settings.defaultMarkup}
+              onChange={(value) => updateGlobalSetting("defaultMarkup", value)}
+              disabled={!isEditing}
+              className="w-48"
+            />
+            <FieldInput
+              label={"Default Shipping"}
+              placeholder={"Enter Default Shipping"}
+              description="Shipping cost seeded on new quotes"
+              name={"defaultShipping"}
+              value={settings.defaultShipping}
+              onChange={(value) => updateGlobalSetting("defaultShipping", value)}
+              disabled={!isEditing}
               className="w-48"
             />
           </Form>

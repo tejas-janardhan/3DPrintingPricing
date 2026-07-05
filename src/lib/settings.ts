@@ -1,3 +1,4 @@
+import { DEFAULT_PRINTER_TYPE } from "@/config/constants";
 import { requiredNumber } from "@/lib/validators";
 import type { FilamentType, Settings } from "@/types";
 
@@ -8,6 +9,9 @@ export function cloneSettings(settings: Settings): Settings {
     byFilament: {
       pla: { ...settings.byFilament.pla },
       petg: { ...settings.byFilament.petg },
+    },
+    byPrinter: {
+      bambuLabA1: { ...settings.byPrinter.bambuLabA1 },
     },
   };
 }
@@ -22,7 +26,9 @@ export function areSettingsEqual(a: Settings, b: Settings): boolean {
     a.byFilament.pla.costPerHour === b.byFilament.pla.costPerHour &&
     a.byFilament.pla.powerConsumption === b.byFilament.pla.powerConsumption &&
     a.byFilament.petg.costPerHour === b.byFilament.petg.costPerHour &&
-    a.byFilament.petg.powerConsumption === b.byFilament.petg.powerConsumption
+    a.byFilament.petg.powerConsumption === b.byFilament.petg.powerConsumption &&
+    a.byPrinter.bambuLabA1.setupTimeMinutes ===
+      b.byPrinter.bambuLabA1.setupTimeMinutes
   );
 }
 
@@ -38,7 +44,8 @@ export function isGlobalSettingsComplete(settings: Settings): boolean {
     isFilled(settings.labourRate) &&
     isFilled(settings.electricityCost) &&
     isFilled(settings.multiplier) &&
-    isFilled(settings.taxPercent)
+    isFilled(settings.taxPercent) &&
+    isFilled(settings.byPrinter[DEFAULT_PRINTER_TYPE].setupTimeMinutes)
   );
 }
 

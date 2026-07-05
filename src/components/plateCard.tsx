@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Settings2, X } from "lucide-react";
+import { ChevronDown, Copy, Settings2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import FieldSelect from "./fieldSelect";
 import { FieldInput } from "./fieldInput";
@@ -12,7 +12,7 @@ import {
 } from "@/config/constants";
 import { cn } from "@/lib/utils";
 import { required, requiredNumber } from "@/lib/validators";
-import { computePlateCost, formatRs } from "@/lib/pricing";
+import { computePlateCost, formatRs, plateQuantity } from "@/lib/pricing";
 import { isFilamentSettingsComplete } from "@/lib/settings";
 import type { FilamentType, PlateInputs, Settings } from "@/types";
 
@@ -28,6 +28,7 @@ export function PlateCard({
   onRemove?: () => void;
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [showQuantity, setShowQuantity] = useState(plateQuantity(plate) > 1);
 
   const filamentReady = isFilamentSettingsComplete(settings, plate.filamentType);
 
@@ -138,6 +139,29 @@ export function PlateCard({
             validate={requiredNumber("Print weight")}
             disabled={!filamentReady}
           />
+          {showQuantity ? (
+            <FieldInput
+              label={"Quantity"}
+              placeholder={"Enter Quantity"}
+              description="Copies of this plate — multiplies its cost"
+              name={"quantity"}
+              value={plate.quantity}
+              onChange={(value) => updatePlate("quantity", value)}
+              validate={requiredNumber("Quantity")}
+              disabled={!filamentReady}
+            />
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="self-start px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground"
+              disabled={!filamentReady}
+              onClick={() => setShowQuantity(true)}
+            >
+              <Copy className="size-3.5" />
+              Add quantity
+            </Button>
+          )}
         </Form>
 
         <Separator />

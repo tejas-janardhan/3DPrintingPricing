@@ -1,5 +1,7 @@
 export type FilamentType = "pla" | "petg";
 
+export type PrinterType = "bambuLabA1";
+
 export type AppData = {
   settings: Settings;
   quotations: Quotation[];
@@ -67,6 +69,8 @@ export type PlateInputs = {
   printTimeHours: string;
   printTimeMinutes: string;
   printWeight: string;
+  /** Copies of this plate; multiplies the plate cost in the final print cost. Defaults to "1". */
+  quantity: string;
 };
 
 export type FilamentSettings = {
@@ -74,12 +78,21 @@ export type FilamentSettings = {
   powerConsumption: string;
 };
 
+export type PrinterSettings = {
+  /** Fixed labour minutes per plate to set up a print. */
+  setupTimeMinutes: string;
+};
+
 export type Settings = {
   labourRate: string;
   electricityCost: string;
   multiplier: string;
   taxPercent: string;
+  /** Seeded into a new quotation's pricing on creation. */
+  defaultMarkup: string;
+  defaultShipping: string;
   byFilament: Record<FilamentType, FilamentSettings>;
+  byPrinter: Record<PrinterType, PrinterSettings>;
 };
 
 export type FinalPricing = {

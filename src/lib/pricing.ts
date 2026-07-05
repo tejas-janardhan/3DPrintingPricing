@@ -1,4 +1,4 @@
-import { MONITORING_RATE, SETUP_TIME_MINUTES } from "@/config/constants";
+import { DEFAULT_PRINTER_TYPE, MONITORING_RATE } from "@/config/constants";
 import { isPlateComplete } from "@/lib/plates";
 import type {
   FinalPricing,
@@ -6,10 +6,14 @@ import type {
   PlateInputs,
   PricingInputs,
   ProcessingInputs,
+  Quotation,
   Settings,
 } from "@/types";
 
 export const num = (value: string) => Number(value) || 0;
+
+/** A plate's copy count; defaults to 1 when unset or invalid. */
+export const plateQuantity = (plate: PlateInputs) => num(plate.quantity) || 1;
 
 export const formatRs = (value: number) => `Rs ${value.toFixed(2)}`;
 
@@ -26,9 +30,12 @@ export function computePlateCost(
   const materialCost = Math.ceil(
     (num(plate.printWeight) * num(plate.filamentPrice)) / 1000,
   );
+  const setupTimeMinutes = num(
+    settings.byPrinter[DEFAULT_PRINTER_TYPE].setupTimeMinutes,
+  );
   const monitoringCost = Math.ceil(
     num(settings.labourRate) *
-      (MONITORING_RATE * totalPrintHours + SETUP_TIME_MINUTES / 60),
+      (MONITORING_RATE * totalPrintHours + setupTimeMinutes / 60),
   );
   const printUsageCost = Math.ceil(totalPrintHours * plateCostPerHour);
   const electricityCost = Math.ceil(
@@ -68,7 +75,8 @@ export function computeFinalPricing({
   pricing: PricingInputs;
 }): FinalPricing {
   const printCost = plates.reduce(
-    (total, plate) => total + computePlateCost(settings, plate).plateCost,
+    (total, plate) =>
+      total + computePlateCost(settings, plate).plateCost * plateQuantity(plate),
     0,
   );
 
@@ -85,7 +93,7 @@ export function computeFinalPricing({
     Math.ceil((finalCost + tax + num(pricing.shipping)) / 10) * 10;
 
   const totalWeight = plates.reduce(
-    (total, plate) => total + num(plate.printWeight),
+    (total, plate) => total + num(plate.printWeight) * plateQuantity(plate),
     0,
   );
   const rsPerGram = totalWeight > 0 ? finalPriceIncShipping / totalWeight : 0;
@@ -99,4 +107,18 @@ export function computeFinalPricing({
     finalPriceIncShipping,
     rsPerGram,
   };
+}
+
+/** Frozen plateCosts + finalPricing snapshot from a quotation's own settings. */
+export function pricedQuotation(quotation: Quotation): Quotation {
+  const plateCosts = quotation.plates.map((plate) =>
+    computePlateCost(quotation.settings, plate),
+  );
+  const finalPricing = computeFinalPricing({
+    settings: quotation.settings,
+    processing: quotation.processing,
+    plates: quotation.plates,
+    pricing: quotation.pricing,
+  });
+  return { ...quotation, plateCosts, finalPricing };
 }

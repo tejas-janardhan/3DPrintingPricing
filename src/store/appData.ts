@@ -28,6 +28,7 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 function mergeSettings(input: unknown): Settings {
   const settings = isObject(input) ? input : {};
   const byFilament = isObject(settings.byFilament) ? settings.byFilament : {};
+  const byPrinter = isObject(settings.byPrinter) ? settings.byPrinter : {};
   return {
     ...EMPTY_SETTINGS,
     ...(settings as Partial<Settings>),
@@ -39,6 +40,12 @@ function mergeSettings(input: unknown): Settings {
       petg: {
         ...EMPTY_SETTINGS.byFilament.petg,
         ...(isObject(byFilament.petg) ? byFilament.petg : {}),
+      },
+    },
+    byPrinter: {
+      bambuLabA1: {
+        ...EMPTY_SETTINGS.byPrinter.bambuLabA1,
+        ...(isObject(byPrinter.bambuLabA1) ? byPrinter.bambuLabA1 : {}),
       },
     },
   };

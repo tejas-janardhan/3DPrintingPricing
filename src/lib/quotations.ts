@@ -25,7 +25,11 @@ export function makeQuotation(settings: Settings): Quotation {
     settings: cloneSettings(settings),
     plates: [makePlate(0)],
     processing: { ...EMPTY_PROCESSING },
-    pricing: { ...EMPTY_PRICING },
+    pricing: {
+      ...EMPTY_PRICING,
+      markup: settings.defaultMarkup,
+      shipping: settings.defaultShipping,
+    },
     plateCosts: [],
     finalPricing: { ...EMPTY_FINAL_PRICING },
     createdAt: now,

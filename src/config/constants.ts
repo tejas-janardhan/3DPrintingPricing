@@ -1,4 +1,4 @@
-import type { AppData, Customer, FilamentType, FinalPricing, PlateInputs, PricingInputs, PrinterCostInputs, ProcessingInputs, Settings } from "@/types";
+import type { AppData, Customer, FilamentType, FinalPricing, PlateInputs, PricingInputs, PrinterCostInputs, PrinterType, ProcessingInputs, Settings } from "@/types";
 
 export type { FilamentType } from "@/types";
 
@@ -6,6 +6,13 @@ export const FILAMENT_TYPE_OPTIONS: { label: string; value: FilamentType }[] = [
   { label: "PLA", value: "pla" },
   { label: "PETG", value: "petg" },
 ];
+
+export const PRINTER_TYPE_OPTIONS: { label: string; value: PrinterType }[] = [
+  { label: "Bambu Lab A1", value: "bambuLabA1" },
+];
+
+// Only one printer for now; pricing uses this printer's setup time.
+export const DEFAULT_PRINTER_TYPE: PrinterType = "bambuLabA1";
 
 export const FILAMENT_PRICE_OPTIONS: Record<
   FilamentType,
@@ -23,9 +30,14 @@ export const EMPTY_SETTINGS: Settings = {
   electricityCost: "",
   multiplier: "",
   taxPercent: "",
+  defaultMarkup: "",
+  defaultShipping: "",
   byFilament: {
     pla: { costPerHour: "", powerConsumption: "" },
     petg: { costPerHour: "", powerConsumption: "" },
+  },
+  byPrinter: {
+    bambuLabA1: { setupTimeMinutes: "" },
   },
 };
 
@@ -37,6 +49,7 @@ export const EMPTY_PLATE: PlateInputs = {
   printTimeHours: "",
   printTimeMinutes: "",
   printWeight: "",
+  quantity: "1",
 };
 
 export const EMPTY_PROCESSING: ProcessingInputs = {
@@ -82,7 +95,6 @@ export const EMPTY_APP_DATA: AppData = {
 };
 
 
-export const SETUP_TIME_MINUTES = 5;
 export const MONITORING_RATE = 0.05; // percent of the print time spent monitoring.
 
 // Maximum number of plates a user can add.
