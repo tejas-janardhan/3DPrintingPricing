@@ -11,7 +11,6 @@ import { ThemeToggle } from "./themeToggle";
 
 const LINKS: { label: string; to: string }[] = [
   { label: "Quotations", to: "/" },
-  { label: "Printer Cost", to: "/printer-cost" },
   { label: "Settings", to: "/settings" },
 ];
 
@@ -41,6 +40,17 @@ export function Nav() {
               </NavigationMenuLink>
             </NavigationMenuItem>
           ))}
+        </NavigationMenuList>
+      </NavigationMenu>
+      <NavigationMenu>
+        <NavigationMenuList>
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <NavLink to="/printer-cost" className={navLinkClassName}>
+                Printer Cost
+              </NavLink>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
       <div className="flex items-center gap-2">

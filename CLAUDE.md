@@ -2,6 +2,8 @@
 
 A React + Vite + TypeScript app for calculating 3D print pricing, using Tailwind CSS with shadcn/ui components.
 
+**Keep code comments terse — a single short line where one is needed; avoid multi-line block comments unless truly necessary.**
+
 ## App Structure
 
 Single-page app, client-only — all state lives in `localStorage`, there is no backend.
@@ -11,35 +13,40 @@ Single-page app, client-only — all state lives in `localStorage`, there is no 
 - [App.tsx](src/App.tsx) — wraps everything in [layout/](src/layout/index.tsx) + [nav.tsx](src/components/nav.tsx) and defines the routes; also mounts the `useBackupReminder` hook.
 
 ### Routes / pages ([src/pages/](src/pages/))
-- `/` → [quotationsPage.tsx](src/pages/quotationsPage.tsx) — list of saved quotations (customer + snapshot final price); create a new one or open/delete an existing one.
-- `/quote/:id` → [quoteFormPage.tsx](src/pages/quoteFormPage.tsx) — the quote builder for one quotation: customer details, plates, processing, and pricing. Autosaves on every edit. The plates/processing/pricing sections are gated behind a "finish settings" alert until global settings are complete.
+The quotations section is a two-pane layout: [quotationsLayout.tsx](src/pages/quotationsLayout.tsx) renders a persistent left sidebar ([quotationsSidebar.tsx](src/components/quotationsSidebar.tsx) — quote list + "Add quote") beside a routed `<Outlet />`. Its child routes:
+- `/` → [quotationsEmpty.tsx](src/pages/quotationsEmpty.tsx) — placeholder prompting you to pick or create a quotation.
+- `/quote/:id` → [quoteDetailPage.tsx](src/pages/quoteDetailPage.tsx) — read-only summary card (customer, plate costs, pricing breakdown) with **Edit**, **Delete** (shadcn `AlertDialog` confirm), and — when the quote is outdated — **Duplicate** instead of Edit.
+- `/quote/:id/edit` → [quoteFormPage.tsx](src/pages/quoteFormPage.tsx) — the quote builder (customer details, plates, processing, pricing). Autosaves on every edit; prices against the quotation's own `settings` snapshot. Redirects to the detail view if the quote is outdated (locked). Sections gate behind a "finish settings" alert until global settings are complete.
 - `/settings` → [settingsPage.tsx](src/pages/settingsPage.tsx) — global operating rates and per-filament settings.
+
+A quotation is **outdated/locked** when its `settings` snapshot differs from the current global settings ([`areSettingsEqual`](src/lib/settings.ts)) — it can't be edited, only viewed or duplicated (a copy under current settings, via `duplicateQuotation`).
 - `/printer-cost` → [printerCostPage.tsx](src/pages/printerCostPage.tsx) — printer amortization helper (cost/hour from capital + usage).
 - `/backup` → [backupPage.tsx](src/pages/backupPage.tsx) — export/import a JSON backup, reset data.
 - `*` → redirects to `/`.
 
 ### State ([src/store/](src/store/))
-- [appStateContext.ts](src/store/appStateContext.ts) — the `AppStateContext` + `useAppState()` hook. Exposes `data`, global setters (`setSettings`, `setPrinterCost`), quotation CRUD (`addQuotation` → returns new id, `updateQuotation(id, patch)`, `deleteQuotation`), and `importData` / `resetData`.
-- [AppStateProvider.tsx](src/store/AppStateProvider.tsx) — holds the single `AppData` state object and **autosaves to `localStorage` on every change**. `updateQuotation` also refreshes each quotation's `finalPrice` snapshot from the settings in effect at edit time.
-- [appData.ts](src/store/appData.ts) — `localStorage` persistence (`STORAGE_KEY = "3dpp:app-data"`), `mergeAppData` (coerces/validates unknown JSON into `AppData`, including each quotation), backup serialize/parse, and last-backup fingerprint tracking (`isBackupStale`, `markBackedUp`).
-- [migrations.ts](src/store/migrations.ts) — versioned schema migrations. Bump `SCHEMA_VERSION` and add a step keyed by the old version; steps must be idempotent. Currently at v3 (v3 folded the single top-level quote into a `quotations` array).
+- [appStateContext.ts](src/store/appStateContext.ts) — the `AppStateContext` + `useAppState()` hook. Exposes `data`, global setters (`setSettings`, `setPrinterCost`), quotation CRUD (`addQuotation` → new id, `duplicateQuotation(id)` → new id, `updateQuotation(id, patch)`, `deleteQuotation`), and `importData` / `resetData`.
+- [AppStateProvider.tsx](src/store/AppStateProvider.tsx) — holds the single `AppData` state object and **autosaves to `localStorage` on every change**. `add`/`duplicate`/`updateQuotation` recompute each quotation's `finalPrice` snapshot from that quotation's own `settings`.
+- [appData.ts](src/store/appData.ts) — `localStorage` persistence (`STORAGE_KEY = "3dpp:app-data"`), `mergeAppData` (coerces/validates unknown JSON into `AppData`, including each quotation's settings snapshot), backup serialize/parse, and last-backup fingerprint tracking (`isBackupStale`, `markBackedUp`).
+- [migrations.ts](src/store/migrations.ts) — versioned schema migrations. Bump `SCHEMA_VERSION` and add a step keyed by the old version; steps must be idempotent. Currently at v1 with no steps (the `quotations` shape is the baseline).
 
 ### Domain logic ([src/lib/](src/lib/))
 - [pricing.ts](src/lib/pricing.ts) — pure pricing math: `computePlateCost` (per plate) and `computeFinalPricing` (whole quote). `num` / `formatRs` helpers live here.
 - [plates.ts](src/lib/plates.ts) — plate helpers (`isPlateComplete`, `defaultPlateName`, `makePlate`).
-- [quotations.ts](src/lib/quotations.ts) — quotation helpers (`makeQuotation`, `isCustomerComplete`, `quotationTitle`).
-- [settings.ts](src/lib/settings.ts) — settings completeness checks (`isGlobalSettingsComplete`).
+- [quotations.ts](src/lib/quotations.ts) — quotation helpers (`makeQuotation`, `duplicateQuotation`, `isCustomerComplete`, `quotationTitle`).
+- [settings.ts](src/lib/settings.ts) — settings completeness checks (`isGlobalSettingsComplete`) plus `cloneSettings` / `areSettingsEqual` (snapshot compare).
 - [validators.ts](src/lib/validators.ts) — input validation. [utils.ts](src/lib/utils.ts) — `cn` classname helper.
 
 ### Types & config
-- [types/index.ts](src/types/index.ts) — all shared types; `AppData` is the root shape: `{ settings, quotations[], printerCost }`. A `Quotation` is `{ id, customer, plates[], processing, pricing, finalPrice, createdAt, updatedAt }`; `Customer` is `{ name, phone, address }` (address optional).
+- [types/index.ts](src/types/index.ts) — all shared types; `AppData` is the root shape: `{ settings, quotations[], printerCost }`. A `Quotation` is `{ id, customer, settings, plates[], processing, pricing, finalPrice, createdAt, updatedAt }` (`settings` is a per-quote snapshot); `Customer` is `{ name, phone, address }` (address optional).
 - [config/constants.ts](src/config/constants.ts) — `EMPTY_*` defaults, filament options, and tunable constants (`MONITORING_RATE`, `SETUP_TIME_MINUTES`, `MAX_PLATES`, `BACKUP_REMINDER_INTERVAL_MS`).
 
 ### Components ([src/components/](src/components/))
 - Feature cards: [plateCard.tsx](src/components/plateCard.tsx), [platesSection.tsx](src/components/platesSection.tsx), [processingCard.tsx](src/components/processingCard.tsx), [pricingCard.tsx](src/components/pricingCard.tsx), [settingsCard.tsx](src/components/settingsCard.tsx), [printerCostCard.tsx](src/components/printerCostCard.tsx).
 - Feature fields: [customerFields.tsx](src/components/customerFields.tsx) (name/phone/address for a quotation).
+- Quotations UI: [quotationsSidebar.tsx](src/components/quotationsSidebar.tsx) (list + add), [quoteNotFound.tsx](src/components/quoteNotFound.tsx) (shared 404 card).
 - Shared wrappers: [card.tsx](src/components/card.tsx), [form.tsx](src/components/form.tsx), [fieldInput.tsx](src/components/fieldInput.tsx), [fieldSelect.tsx](src/components/fieldSelect.tsx), [nav.tsx](src/components/nav.tsx).
-- [ui/](src/components/ui/) — generated shadcn/ui primitives (button, card, input, select, alert, sonner, …). Don't hand-edit unless intentionally customizing a primitive.
+- [ui/](src/components/ui/) — generated shadcn/ui primitives (button, card, input, select, alert, alert-dialog, sonner, …). Don't hand-edit unless intentionally customizing a primitive. (`button` was customized to support `asChild` via radix `Slot`.)
 
 ### Hooks
 - [useBackupReminder.ts](src/hooks/useBackupReminder.ts) — toasts every 30 min when live data differs from the last exported backup.

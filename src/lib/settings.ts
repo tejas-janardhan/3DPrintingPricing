@@ -1,6 +1,31 @@
 import { requiredNumber } from "@/lib/validators";
 import type { FilamentType, Settings } from "@/types";
 
+/** A deep copy of a settings object, safe to store on a quotation. */
+export function cloneSettings(settings: Settings): Settings {
+  return {
+    ...settings,
+    byFilament: {
+      pla: { ...settings.byFilament.pla },
+      petg: { ...settings.byFilament.petg },
+    },
+  };
+}
+
+/** Value-equality of two settings snapshots (every field compared). */
+export function areSettingsEqual(a: Settings, b: Settings): boolean {
+  return (
+    a.labourRate === b.labourRate &&
+    a.electricityCost === b.electricityCost &&
+    a.multiplier === b.multiplier &&
+    a.taxPercent === b.taxPercent &&
+    a.byFilament.pla.costPerHour === b.byFilament.pla.costPerHour &&
+    a.byFilament.pla.powerConsumption === b.byFilament.pla.powerConsumption &&
+    a.byFilament.petg.costPerHour === b.byFilament.petg.costPerHour &&
+    a.byFilament.petg.powerConsumption === b.byFilament.petg.powerConsumption
+  );
+}
+
 const isFilled = (value: string) => requiredNumber("value")(value) === undefined;
 
 /**

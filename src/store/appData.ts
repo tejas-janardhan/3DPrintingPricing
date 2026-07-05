@@ -23,6 +23,26 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
  * valid AppData, filling any missing fields from the empty defaults. Doubles as
  * validation for imported backups. Cross-version upgrades belong in `migrate`.
  */
+/** Coerces raw settings into a valid Settings, filling defaults. */
+function mergeSettings(input: unknown): Settings {
+  const settings = isObject(input) ? input : {};
+  const byFilament = isObject(settings.byFilament) ? settings.byFilament : {};
+  return {
+    ...EMPTY_SETTINGS,
+    ...(settings as Partial<Settings>),
+    byFilament: {
+      pla: {
+        ...EMPTY_SETTINGS.byFilament.pla,
+        ...(isObject(byFilament.pla) ? byFilament.pla : {}),
+      },
+      petg: {
+        ...EMPTY_SETTINGS.byFilament.petg,
+        ...(isObject(byFilament.petg) ? byFilament.petg : {}),
+      },
+    },
+  };
+}
+
 /** Coerces one raw plate into a valid PlateInputs, filling defaults. */
 function mergePlate(plate: unknown, index: number): PlateInputs {
   const source = isObject(plate) ? plate : {};
@@ -40,8 +60,12 @@ function mergePlate(plate: unknown, index: number): PlateInputs {
   };
 }
 
-/** Coerces one raw quotation into a valid Quotation, filling defaults. */
-function mergeQuotation(input: unknown, index: number): Quotation {
+/** Coerces a raw quotation into a valid Quotation; settings fall back to global. */
+function mergeQuotation(
+  input: unknown,
+  index: number,
+  fallbackSettings: Settings,
+): Quotation {
   const source = isObject(input) ? input : {};
   const customer = isObject(source.customer) ? source.customer : {};
 
@@ -58,6 +82,7 @@ function mergeQuotation(input: unknown, index: number): Quotation {
       ...EMPTY_CUSTOMER,
       ...(customer as Partial<Customer>),
     },
+    settings: "settings" in source ? mergeSettings(source.settings) : fallbackSettings,
     plates,
     processing: {
       ...EMPTY_PROCESSING,
@@ -79,27 +104,14 @@ function mergeQuotation(input: unknown, index: number): Quotation {
 export function mergeAppData(input: unknown): AppData {
   if (!isObject(input)) return EMPTY_APP_DATA;
 
-  const settings = isObject(input.settings) ? input.settings : {};
-  const byFilament = isObject(settings.byFilament) ? settings.byFilament : {};
-
+  const settings = mergeSettings(input.settings);
   const rawQuotations = Array.isArray(input.quotations) ? input.quotations : [];
 
   return {
-    settings: {
-      ...EMPTY_SETTINGS,
-      ...(settings as Partial<Settings>),
-      byFilament: {
-        pla: {
-          ...EMPTY_SETTINGS.byFilament.pla,
-          ...(isObject(byFilament.pla) ? byFilament.pla : {}),
-        },
-        petg: {
-          ...EMPTY_SETTINGS.byFilament.petg,
-          ...(isObject(byFilament.petg) ? byFilament.petg : {}),
-        },
-      },
-    },
-    quotations: rawQuotations.map(mergeQuotation),
+    settings,
+    quotations: rawQuotations.map((q, index) =>
+      mergeQuotation(q, index, settings),
+    ),
     printerCost: {
       ...EMPTY_PRINTER_COST,
       ...(isObject(input.printerCost)
@@ -194,9 +206,7 @@ const BACKUP_APP_ID = "3d-printing-pricing";
 // wrapper) — independent of the data's SCHEMA_VERSION, which is carried inside
 // `data` itself. Only bump this if the wrapper structure changes.
 const BACKUP_VERSION = 1;
-// Includes legacy keys (plate/plates/processing/pricing) so pre-v3 backups are
-// still recognised; `migrate` folds them into `quotations` before merging.
-const KNOWN_KEYS = ["settings", "quotations", "printerCost", "plates", "plate", "processing", "pricing"] as const;
+const KNOWN_KEYS = ["settings", "quotations", "printerCost"] as const;
 
 export type Backup = {
   app: string;

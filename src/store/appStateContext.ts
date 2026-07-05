@@ -15,8 +15,10 @@ export type AppStateContextValue = {
   data: AppData;
   setSettings: (settings: Settings) => void;
   setPrinterCost: (printerCost: PrinterCostInputs) => void;
-  /** Creates a new empty quotation and returns its id. */
+  /** Creates a new empty quotation (snapshotting current settings); returns its id. */
   addQuotation: () => string;
+  /** Copies a quotation under current settings; returns the new id (or null if not found). */
+  duplicateQuotation: (id: string) => string | null;
   /** Merges a patch into a quotation and refreshes its finalPrice snapshot. */
   updateQuotation: (id: string, patch: QuotationPatch) => void;
   deleteQuotation: (id: string) => void;

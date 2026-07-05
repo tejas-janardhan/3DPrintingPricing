@@ -1,10 +1,11 @@
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Settings2 } from "lucide-react";
+import { Link, Navigate, useParams } from "react-router-dom";
+import { Check, Settings2 } from "lucide-react";
 import { CustomerFields } from "@/components/customerFields";
 import { PlatesSection } from "@/components/platesSection";
 import { ProcessingFields } from "@/components/processingCard";
 import { PricingFields } from "@/components/pricingCard";
 import { CardSection } from "@/components/section";
+import { QuoteNotFound } from "@/components/quoteNotFound";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { computeFinalPricing, formatRs } from "@/lib/pricing";
-import { isGlobalSettingsComplete } from "@/lib/settings";
+import { areSettingsEqual, isGlobalSettingsComplete } from "@/lib/settings";
 import { useAppState } from "@/store/appStateContext";
 
 export function QuoteFormPage() {
@@ -25,34 +26,16 @@ export function QuoteFormPage() {
   const { data, updateQuotation } = useAppState();
 
   const quotation = data.quotations.find((q) => q.id === id);
+  if (!quotation) return <QuoteNotFound />;
 
-  if (!quotation) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-semibold tracking-tight">
-            Quotation not found
-          </CardTitle>
-          <CardDescription>
-            This quotation doesn't exist or has been deleted.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/">
-              <ArrowLeft />
-              Back to quotations
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
-    );
+  // A locked (outdated) quote can only be viewed/duplicated — send edits to detail.
+  if (!areSettingsEqual(quotation.settings, data.settings)) {
+    return <Navigate to={`/quote/${quotation.id}`} replace />;
   }
 
   const settingsReady = isGlobalSettingsComplete(data.settings);
-
   const { finalPriceIncShipping } = computeFinalPricing({
-    settings: data.settings,
+    settings: quotation.settings,
     processing: quotation.processing,
     plates: quotation.plates,
     pricing: quotation.pricing,
@@ -61,35 +44,32 @@ export function QuoteFormPage() {
   return (
     <Card>
       <CardHeader className="border-b pb-6">
-        <div className="mb-1">
-          <Button asChild variant="ghost" size="sm" className="-ml-2 h-8 px-2">
-            <Link to="/">
-              <ArrowLeft />
-              Quotations
-            </Link>
-          </Button>
-        </div>
         <CardTitle className="text-2xl font-semibold tracking-tight">
           {quotation.customer.name.trim() || "New quotation"}
         </CardTitle>
         <CardDescription>
           Customer details and the quote for this job.
         </CardDescription>
-        <CardAction className="flex flex-col items-end gap-0.5">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">
-            Final Price
-          </span>
-          <span className="text-2xl font-semibold tabular-nums text-primary">
-            {formatRs(settingsReady ? finalPriceIncShipping : 0)}
-          </span>
+        <CardAction className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-0.5">
+            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+              Final Price
+            </span>
+            <span className="text-2xl font-semibold tabular-nums text-primary">
+              {formatRs(settingsReady ? finalPriceIncShipping : 0)}
+            </span>
+          </div>
+          <Button asChild size="sm" variant="outline">
+            <Link to={`/quote/${quotation.id}`}>
+              <Check />
+              Done
+            </Link>
+          </Button>
         </CardAction>
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6">
-        <CardSection
-          title="Customer"
-          description="Who this quotation is for."
-        >
+        <CardSection title="Customer" description="Who this quotation is for.">
           <CustomerFields
             customer={quotation.customer}
             onChange={(customer) => updateQuotation(quotation.id, { customer })}
@@ -127,7 +107,7 @@ export function QuoteFormPage() {
             description="Add a plate for each print in the job."
           >
             <PlatesSection
-              settings={data.settings}
+              settings={quotation.settings}
               plates={quotation.plates}
               onChange={(plates) => updateQuotation(quotation.id, { plates })}
             />
@@ -154,7 +134,7 @@ export function QuoteFormPage() {
             description="Markup, shipping, and your final quote."
           >
             <PricingFields
-              settings={data.settings}
+              settings={quotation.settings}
               plates={quotation.plates}
               processing={quotation.processing}
               pricing={quotation.pricing}

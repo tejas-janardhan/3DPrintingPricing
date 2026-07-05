@@ -16,14 +16,12 @@ export type Customer = {
 export type Quotation = {
   id: string;
   customer: Customer;
+  /** Snapshot of settings at creation; the quote is always priced against this. */
+  settings: Settings;
   plates: PlateInputs[];
   processing: ProcessingInputs;
   pricing: PricingInputs;
-  /**
-   * Final price (inc. shipping) as computed the last time this quotation was
-   * edited — a snapshot, so later changes to global settings don't retroactively
-   * move a quoted price. Refreshed on every edit of the quotation itself.
-   */
+  /** Final price (inc. shipping) snapshot, refreshed on each edit. */
   finalPrice: number;
   createdAt: string;
   updatedAt: string;

@@ -121,11 +121,9 @@ export function PrinterCostCard({
             </div>
           </Form>
         </CardSection>
-
         <Separator />
-
         <CardSection title="Estimate" description="Your resulting hourly cost.">
-          <div className="flex w-full flex-col gap-6">
+          <div className="flex w-full max-w-md flex-col gap-6">
             <div className="flex flex-col gap-2 text-sm text-muted-foreground">
               {summary.map((line) => (
                 <div

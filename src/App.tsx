@@ -1,7 +1,9 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./layout";
 import { Nav } from "./components/nav";
-import { QuotationsPage } from "./pages/quotationsPage";
+import { QuotationsLayout } from "./pages/quotationsLayout";
+import { QuotationsEmpty } from "./pages/quotationsEmpty";
+import { QuoteDetailPage } from "./pages/quoteDetailPage";
 import { QuoteFormPage } from "./pages/quoteFormPage";
 import { SettingsPage } from "./pages/settingsPage";
 import { PrinterCostPage } from "./pages/printerCostPage";
@@ -15,8 +17,11 @@ function App() {
     <Layout>
       <Nav />
       <Routes>
-        <Route path="/" element={<QuotationsPage />} />
-        <Route path="/quote/:id" element={<QuoteFormPage />} />
+        <Route element={<QuotationsLayout />}>
+          <Route path="/" element={<QuotationsEmpty />} />
+          <Route path="/quote/:id" element={<QuoteDetailPage />} />
+          <Route path="/quote/:id/edit" element={<QuoteFormPage />} />
+        </Route>
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/printer-cost" element={<PrinterCostPage />} />
         <Route path="/backup" element={<BackupPage />} />
