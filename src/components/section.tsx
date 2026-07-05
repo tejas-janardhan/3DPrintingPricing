@@ -13,15 +13,28 @@ export function CardSection({
   description,
   collapsible = false,
   defaultOpen = true,
+  padded = false,
+  open: controlledOpen,
+  onOpenChange,
   children,
 }: {
   title: string;
   description?: string;
   collapsible?: boolean;
   defaultOpen?: boolean;
+  /** Adds horizontal padding so input focus rings aren't clipped by overflow-hidden. */
+  padded?: boolean;
+  /** Controlled open state; falls back to internal state when omitted. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const open = controlledOpen ?? internalOpen;
+  const toggle = () => {
+    const next = !open;
+    onOpenChange ? onOpenChange(next) : setInternalOpen(next);
+  };
 
   const heading = (
     <div className="flex flex-col gap-1 text-left">
@@ -48,7 +61,7 @@ export function CardSection({
       <button
         type="button"
         aria-expanded={open}
-        onClick={() => setOpen((shown) => !shown)}
+        onClick={toggle}
         className="flex items-center justify-between gap-4 text-left"
       >
         {heading}
@@ -65,7 +78,10 @@ export function CardSection({
           open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
         )}
       >
-        <div className="overflow-hidden">{children}</div>
+        {/* `padded` adds horizontal padding so input focus rings aren't clipped. */}
+        <div className="overflow-hidden">
+          <div className={cn(padded && "px-1")}>{children}</div>
+        </div>
       </div>
     </section>
   );

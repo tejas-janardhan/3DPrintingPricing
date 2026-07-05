@@ -6,7 +6,7 @@ import { QuoteNotFound } from "@/components/quoteNotFound";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FILAMENT_TYPE_OPTIONS } from "@/config/constants";
-import type { PlateInputs, Settings } from "@/types";
+import type { PlateInputs } from "@/types";
 import {
   Card,
   CardAction,
@@ -27,7 +27,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
-import { computeFinalPricing, computePlateCost, formatRs } from "@/lib/pricing";
+import { formatRs } from "@/lib/pricing";
 import { areSettingsEqual } from "@/lib/settings";
 import { quotationTitle } from "@/lib/quotations";
 import { useAppState } from "@/store/appStateContext";
@@ -113,10 +113,10 @@ const filamentLabel = (value: string) =>
 /** One plate: cost row plus a "See more" with its print inputs. */
 function PlateRow({
   plate,
-  settings,
+  plateCost,
 }: {
   plate: PlateInputs;
-  settings: Settings;
+  plateCost: number;
 }) {
   const hours = plate.printTimeHours.trim() || "0";
   const minutes = plate.printTimeMinutes.trim() || "0";
@@ -124,10 +124,6 @@ function PlateRow({
   const price = plate.filamentPrice.trim();
   return (
     <div className="flex flex-col gap-1">
-      <PriceRow
-        label={plate.name}
-        value={computePlateCost(settings, plate).plateCost}
-      />
       <SeeMore>
         <DetailRow label="Filament Type" value={filamentLabel(plate.filamentType)} />
         <DetailRow
@@ -137,6 +133,7 @@ function PlateRow({
         <DetailRow label="Print Time" value={`${hours}h ${minutes}m`} />
         <DetailRow label="Print Weight" value={`${weight} g`} />
       </SeeMore>
+      <PriceRow label={plate.name} value={plateCost} />
     </div>
   );
 }
@@ -151,12 +148,7 @@ export function QuoteDetailPage() {
   if (!quotation) return <QuoteNotFound />;
 
   const outdated = !areSettingsEqual(quotation.settings, data.settings);
-  const pricing = computeFinalPricing({
-    settings: quotation.settings,
-    processing: quotation.processing,
-    plates: quotation.plates,
-    pricing: quotation.pricing,
-  });
+  const { finalPricing } = quotation;
 
   const handleDuplicate = () => {
     const newId = duplicateQuotation(quotation.id);
@@ -181,11 +173,13 @@ export function QuoteDetailPage() {
             Final Price
           </span>
           <span className="text-2xl font-semibold tabular-nums text-primary">
-            {formatRs(quotation.finalPrice)}
+            {formatRs(finalPricing.finalPriceIncShipping)}
+          </span>
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {formatRs(finalPricing.rsPerGram)} /g
           </span>
         </CardAction>
       </CardHeader>
-
       <CardContent className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-2">
           {outdated ? (
@@ -202,7 +196,6 @@ export function QuoteDetailPage() {
               Edit
             </Button>
           )}
-
           <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
             <AlertDialogTrigger asChild>
               <Button
@@ -261,11 +254,11 @@ export function QuoteDetailPage() {
 
         <CardSection title="Plates">
           <div className="flex max-w-md flex-col gap-3">
-            {quotation.plates.map((plate) => (
+            {quotation.plates.map((plate, index) => (
               <PlateRow
                 key={plate.id}
                 plate={plate}
-                settings={quotation.settings}
+                plateCost={quotation.plateCosts[index]?.plateCost ?? 0}
               />
             ))}
           </div>
@@ -276,8 +269,8 @@ export function QuoteDetailPage() {
         <CardSection title="Pricing">
           <div className="flex max-w-md flex-col gap-2">
             <SeeMore>
-              <PriceRow label="Wage Cost" value={pricing.wageCost} />
-              <PriceRow label="Total Print Cost" value={pricing.printCost} />
+              <PriceRow label="Wage Cost" value={finalPricing.wageCost} />
+              <PriceRow label="Total Print Cost" value={finalPricing.printCost} />
               <DetailRow
                 label="Markup"
                 value={`${quotation.pricing.markup.trim() || "0"}%`}
@@ -287,14 +280,14 @@ export function QuoteDetailPage() {
                 value={Number(quotation.pricing.shipping.trim() || "0")}
               />
             </SeeMore>
-            <PriceRow label="Last Price" value={pricing.lastPrice} />
+            <PriceRow label="Last Price" value={finalPricing.lastPrice} />
             <Separator className="my-1" />
-            <PriceRow label="Final Price" value={pricing.finalCost} />
-            <PriceRow label="Tax" value={pricing.tax} />
+            <PriceRow label="Final Price" value={finalPricing.finalCost} />
+            <PriceRow label="Tax" value={finalPricing.tax} />
             <Separator className="my-1" />
             <PriceRow
               label="Final Price Inc Shipping"
-              value={pricing.finalPriceIncShipping}
+              value={finalPricing.finalPriceIncShipping}
               strong
             />
           </div>

@@ -84,6 +84,12 @@ export function computeFinalPricing({
   const finalPriceIncShipping =
     Math.ceil((finalCost + tax + num(pricing.shipping)) / 10) * 10;
 
+  const totalWeight = plates.reduce(
+    (total, plate) => total + num(plate.printWeight),
+    0,
+  );
+  const rsPerGram = totalWeight > 0 ? finalPriceIncShipping / totalWeight : 0;
+
   return {
     wageCost,
     printCost,
@@ -91,5 +97,6 @@ export function computeFinalPricing({
     finalCost,
     tax,
     finalPriceIncShipping,
+    rsPerGram,
   };
 }

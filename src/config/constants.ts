@@ -1,4 +1,4 @@
-import type { AppData, Customer, FilamentType, PlateInputs, PricingInputs, PrinterCostInputs, ProcessingInputs, Settings } from "@/types";
+import type { AppData, Customer, FilamentType, FinalPricing, PlateInputs, PricingInputs, PrinterCostInputs, ProcessingInputs, Settings } from "@/types";
 
 export type { FilamentType } from "@/types";
 
@@ -63,6 +63,16 @@ export const EMPTY_CUSTOMER: Customer = {
   name: "",
   phone: "",
   address: "",
+};
+
+export const EMPTY_FINAL_PRICING: FinalPricing = {
+  wageCost: 0,
+  printCost: 0,
+  lastPrice: 0,
+  finalCost: 0,
+  tax: 0,
+  finalPriceIncShipping: 0,
+  rsPerGram: 0,
 };
 
 export const EMPTY_APP_DATA: AppData = {

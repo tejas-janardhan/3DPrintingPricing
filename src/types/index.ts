@@ -23,8 +23,10 @@ export type Quotation = {
   plates: PlateInputs[];
   processing: ProcessingInputs;
   pricing: PricingInputs;
-  /** Final price (inc. shipping) snapshot, refreshed on each edit. */
-  finalPrice: number;
+  /** Frozen per-plate cost breakdown, parallel to `plates`, snapshotted on each edit. */
+  plateCosts: PlateCosts[];
+  /** Frozen pricing breakdown, recomputed and snapshotted on each edit. */
+  finalPricing: FinalPricing;
   createdAt: string;
   updatedAt: string;
 };
@@ -87,4 +89,5 @@ export type FinalPricing = {
   finalCost: number;
   tax: number;
   finalPriceIncShipping: number;
+  rsPerGram: number;
 };

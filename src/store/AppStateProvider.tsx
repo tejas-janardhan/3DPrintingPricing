@@ -10,18 +10,21 @@ import { loadAppData, saveAppData } from "./appData";
 import { AppStateContext, type QuotationPatch } from "./appStateContext";
 import type { AppData, PrinterCostInputs, Quotation, Settings } from "@/types";
 import { EMPTY_APP_DATA } from "@/config/constants";
-import { computeFinalPricing } from "@/lib/pricing";
+import { computeFinalPricing, computePlateCost } from "@/lib/pricing";
 import { duplicateQuotation, makeQuotation } from "@/lib/quotations";
 
-/** finalPrice snapshot from a quotation's own settings. */
+/** Frozen plateCosts + finalPricing snapshot from a quotation's own settings. */
 function pricedQuotation(quotation: Quotation): Quotation {
-  const { finalPriceIncShipping } = computeFinalPricing({
+  const plateCosts = quotation.plates.map((plate) =>
+    computePlateCost(quotation.settings, plate),
+  );
+  const finalPricing = computeFinalPricing({
     settings: quotation.settings,
     processing: quotation.processing,
     plates: quotation.plates,
     pricing: quotation.pricing,
   });
-  return { ...quotation, finalPrice: finalPriceIncShipping };
+  return { ...quotation, plateCosts, finalPricing };
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {

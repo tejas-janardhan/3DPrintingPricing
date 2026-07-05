@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { Check, Settings2 } from "lucide-react";
+import { Check, ChevronsDownUp, Settings2 } from "lucide-react";
 import { CustomerFields } from "@/components/customerFields";
 import { PlatesSection } from "@/components/platesSection";
 import { ProcessingFields } from "@/components/processingCard";
@@ -24,6 +25,26 @@ import { useAppState } from "@/store/appStateContext";
 export function QuoteFormPage() {
   const { id } = useParams<{ id: string }>();
   const { data, updateQuotation } = useAppState();
+  const [openSections, setOpenSections] = useState({
+    customer: true,
+    plates: true,
+    processing: true,
+    pricing: true,
+  });
+
+  const anyOpen = Object.values(openSections).some(Boolean);
+  const toggleAll = () => {
+    const next = !anyOpen;
+    setOpenSections({
+      customer: next,
+      plates: next,
+      processing: next,
+      pricing: next,
+    });
+  };
+  const setSection =
+    (key: keyof typeof openSections) => (open: boolean) =>
+      setOpenSections((sections) => ({ ...sections, [key]: open }));
 
   const quotation = data.quotations.find((q) => q.id === id);
   if (!quotation) return <QuoteNotFound />;
@@ -34,7 +55,7 @@ export function QuoteFormPage() {
   }
 
   const settingsReady = isGlobalSettingsComplete(data.settings);
-  const { finalPriceIncShipping } = computeFinalPricing({
+  const { finalPriceIncShipping, rsPerGram } = computeFinalPricing({
     settings: quotation.settings,
     processing: quotation.processing,
     plates: quotation.plates,
@@ -59,29 +80,38 @@ export function QuoteFormPage() {
         <CardDescription>
           Name this quote, then fill in the details for the job.
         </CardDescription>
-        <CardAction className="flex flex-col items-end gap-2">
-          <div className="flex flex-col items-end gap-0.5">
-            <span className="text-xs uppercase tracking-wide text-muted-foreground">
-              Final Price
-            </span>
-            <span className="text-2xl font-semibold tabular-nums text-primary">
-              {formatRs(settingsReady ? finalPriceIncShipping : 0)}
-            </span>
-          </div>
+        <CardAction className="flex flex-col items-end gap-0.5">
+          <span className="text-xs uppercase tracking-wide text-muted-foreground">
+            Final Price
+          </span>
+          <span className="text-2xl font-semibold tabular-nums text-primary">
+            {formatRs(settingsReady ? finalPriceIncShipping : 0)}
+          </span>
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {formatRs(settingsReady ? rsPerGram : 0)} /g
+          </span>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-6">
+        <div className="flex flex-wrap items-center gap-2">
           <Button asChild size="sm" variant="outline">
             <Link to={`/quote/${quotation.id}`}>
               <Check />
               Done
             </Link>
           </Button>
-        </CardAction>
-      </CardHeader>
-
-      <CardContent className="flex flex-col gap-6">
+          <Button size="sm" variant="ghost" onClick={toggleAll}>
+            <ChevronsDownUp />
+            {anyOpen ? "Collapse all" : "Expand all"}
+          </Button>
+        </div>
         <CardSection
           title="Customer"
           description="Who this quotation is for."
           collapsible
+          padded
+          open={openSections.customer}
+          onOpenChange={setSection("customer")}
         >
           <CustomerFields
             customer={quotation.customer}
@@ -119,6 +149,8 @@ export function QuoteFormPage() {
             title="Plates"
             description="Add a plate for each print in the job."
             collapsible
+            open={openSections.plates}
+            onOpenChange={setSection("plates")}
           >
             <PlatesSection
               settings={quotation.settings}
@@ -133,6 +165,9 @@ export function QuoteFormPage() {
             title="Pre & Post Processing"
             description="Labour and parts added on top of printing."
             collapsible
+            padded
+            open={openSections.processing}
+            onOpenChange={setSection("processing")}
           >
             <ProcessingFields
               processing={quotation.processing}
@@ -148,6 +183,9 @@ export function QuoteFormPage() {
             title="Pricing"
             description="Markup, shipping, and your final quote."
             collapsible
+            padded
+            open={openSections.pricing}
+            onOpenChange={setSection("pricing")}
           >
             <PricingFields
               settings={quotation.settings}

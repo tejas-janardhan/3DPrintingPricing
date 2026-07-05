@@ -1,5 +1,6 @@
 import { EMPTY_APP_DATA, EMPTY_CUSTOMER, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PRINTER_COST, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
 import { defaultPlateName } from "@/lib/plates";
+import { computeFinalPricing, computePlateCost } from "@/lib/pricing";
 import { toast } from "sonner";
 import { migrate, SCHEMA_VERSION } from "./migrations";
 import type { AppData, Customer, PlateInputs, PricingInputs, PrinterCostInputs, Quotation, Settings } from "@/types";
@@ -72,6 +73,17 @@ function mergeQuotation(
   const rawPlates = Array.isArray(source.plates) ? source.plates : [];
   const plates = (rawPlates.length ? rawPlates : [EMPTY_PLATE]).map(mergePlate);
 
+  const settings =
+    "settings" in source ? mergeSettings(source.settings) : fallbackSettings;
+  const processing = {
+    ...EMPTY_PROCESSING,
+    ...(isObject(source.processing) ? source.processing : {}),
+  };
+  const pricing = {
+    ...EMPTY_PRICING,
+    ...(isObject(source.pricing) ? (source.pricing as Partial<PricingInputs>) : {}),
+  };
+
   const now = new Date().toISOString();
   return {
     id:
@@ -83,20 +95,14 @@ function mergeQuotation(
       ...EMPTY_CUSTOMER,
       ...(customer as Partial<Customer>),
     },
-    settings: "settings" in source ? mergeSettings(source.settings) : fallbackSettings,
+    settings,
     plates,
-    processing: {
-      ...EMPTY_PROCESSING,
-      ...(isObject(source.processing) ? source.processing : {}),
-    },
-    pricing: {
-      ...EMPTY_PRICING,
-      ...(isObject(source.pricing) ? (source.pricing as Partial<PricingInputs>) : {}),
-    },
-    finalPrice:
-      typeof source.finalPrice === "number" && Number.isFinite(source.finalPrice)
-        ? source.finalPrice
-        : 0,
+    processing,
+    pricing,
+    // Recomputed from the frozen settings snapshot so the breakdown is always
+    // consistent (and legacy data without these fields upgrades transparently).
+    plateCosts: plates.map((plate) => computePlateCost(settings, plate)),
+    finalPricing: computeFinalPricing({ settings, processing, plates, pricing }),
     createdAt: typeof source.createdAt === "string" ? source.createdAt : now,
     updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : now,
   };

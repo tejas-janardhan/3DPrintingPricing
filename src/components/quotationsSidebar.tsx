@@ -19,7 +19,7 @@ export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
   return (
     <aside className="flex w-72 shrink-0 flex-col gap-3">
       {showAdd && (
-        <Button size="sm" onClick={handleNew} className="w-full">
+        <Button size="sm" onClick={handleNew} className="w-fit">
           <Plus />
           Add quote
         </Button>
@@ -61,7 +61,7 @@ export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
                       {quotation.customer.phone.trim() || "No phone"}
                     </span>
                     <span className="shrink-0 tabular-nums font-medium text-primary">
-                      {formatRs(quotation.finalPrice)}
+                      {formatRs(quotation.finalPricing.finalPriceIncShipping)}
                     </span>
                   </span>
                 </NavLink>

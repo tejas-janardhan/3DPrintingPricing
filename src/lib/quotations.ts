@@ -1,5 +1,6 @@
 import {
   EMPTY_CUSTOMER,
+  EMPTY_FINAL_PRICING,
   EMPTY_PRICING,
   EMPTY_PROCESSING,
 } from "@/config/constants";
@@ -25,7 +26,8 @@ export function makeQuotation(settings: Settings): Quotation {
     plates: [makePlate(0)],
     processing: { ...EMPTY_PROCESSING },
     pricing: { ...EMPTY_PRICING },
-    finalPrice: 0,
+    plateCosts: [],
+    finalPricing: { ...EMPTY_FINAL_PRICING },
     createdAt: now,
     updatedAt: now,
   };
@@ -50,7 +52,8 @@ export function duplicateQuotation(
     plates,
     processing: { ...source.processing },
     pricing: { ...source.pricing },
-    finalPrice: 0,
+    plateCosts: [],
+    finalPricing: { ...EMPTY_FINAL_PRICING },
     createdAt: now,
     updatedAt: now,
   };
