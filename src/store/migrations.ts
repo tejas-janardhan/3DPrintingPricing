@@ -8,7 +8,7 @@
 // Each step MUST be idempotent, so replaying it (e.g. importing an old backup)
 // never corrupts already-migrated data.
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /** Version assumed for persisted data that has no `schemaVersion` marker. */
 const INITIAL_VERSION = 1;
@@ -21,6 +21,7 @@ type RawData = Record<string, unknown>;
 /** A step keyed by version `n` upgrades data from version `n` to `n + 1`. */
 const MIGRATIONS: Record<number, (input: RawData) => RawData> = {
   1: migrateV1toV2,
+  2: migrateV2toV3,
 };
 
 function detectVersion(input: RawData): number {
@@ -79,6 +80,39 @@ function migrateV1toV2(input: RawData): RawData {
     }
     next.pricing = pricing;
   }
+
+  return next;
+}
+
+/**
+ * v2 → v3
+ * - The single top-level quote (`plates`, `processing`, `pricing`) became a
+ *   `quotations` array, each entry pairing a customer with its own quote. The
+ *   existing draft is preserved as one initial, customer-less quotation.
+ */
+function migrateV2toV3(input: RawData): RawData {
+  const next: RawData = { ...input };
+
+  // Already migrated: leave the quotations array untouched.
+  if (!Array.isArray(next.quotations)) {
+    const now = new Date().toISOString();
+    next.quotations = [
+      {
+        id: `quote-${Date.now()}`,
+        customer: { name: "", phone: "", address: "" },
+        plates: Array.isArray(next.plates) ? next.plates : [],
+        processing: isObject(next.processing) ? next.processing : {},
+        pricing: isObject(next.pricing) ? next.pricing : {},
+        finalPrice: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ];
+  }
+
+  delete next.plates;
+  delete next.processing;
+  delete next.pricing;
 
   return next;
 }

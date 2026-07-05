@@ -2,10 +2,31 @@ export type FilamentType = "pla" | "petg";
 
 export type AppData = {
   settings: Settings;
+  quotations: Quotation[];
+  printerCost: PrinterCostInputs;
+};
+
+export type Customer = {
+  name: string;
+  phone: string;
+  /** Optional. */
+  address: string;
+};
+
+export type Quotation = {
+  id: string;
+  customer: Customer;
   plates: PlateInputs[];
   processing: ProcessingInputs;
   pricing: PricingInputs;
-  printerCost: PrinterCostInputs;
+  /**
+   * Final price (inc. shipping) as computed the last time this quotation was
+   * edited — a snapshot, so later changes to global settings don't retroactively
+   * move a quoted price. Refreshed on every edit of the quotation itself.
+   */
+  finalPrice: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type PrinterCostInputs = {

@@ -10,7 +10,7 @@ import {
 import { ThemeToggle } from "./themeToggle";
 
 const LINKS: { label: string; to: string }[] = [
-  { label: "Calculator", to: "/" },
+  { label: "Quotations", to: "/" },
   { label: "Printer Cost", to: "/printer-cost" },
   { label: "Settings", to: "/settings" },
 ];

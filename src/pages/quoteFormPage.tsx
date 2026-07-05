@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
-import { Settings2 } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, Settings2 } from "lucide-react";
+import { CustomerFields } from "@/components/customerFields";
 import { PlatesSection } from "@/components/platesSection";
 import { ProcessingFields } from "@/components/processingCard";
 import { PricingFields } from "@/components/pricingCard";
@@ -19,26 +20,60 @@ import { computeFinalPricing, formatRs } from "@/lib/pricing";
 import { isGlobalSettingsComplete } from "@/lib/settings";
 import { useAppState } from "@/store/appStateContext";
 
-export function CalculatorPage() {
-  const { data, setPlates, setProcessing, setPricing } = useAppState();
+export function QuoteFormPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data, updateQuotation } = useAppState();
+
+  const quotation = data.quotations.find((q) => q.id === id);
+
+  if (!quotation) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-semibold tracking-tight">
+            Quotation not found
+          </CardTitle>
+          <CardDescription>
+            This quotation doesn't exist or has been deleted.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline" size="sm">
+            <Link to="/">
+              <ArrowLeft />
+              Back to quotations
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const settingsReady = isGlobalSettingsComplete(data.settings);
 
   const { finalPriceIncShipping } = computeFinalPricing({
     settings: data.settings,
-    processing: data.processing,
-    plates: data.plates,
-    pricing: data.pricing,
+    processing: quotation.processing,
+    plates: quotation.plates,
+    pricing: quotation.pricing,
   });
 
   return (
     <Card>
       <CardHeader className="border-b pb-6">
+        <div className="mb-1">
+          <Button asChild variant="ghost" size="sm" className="-ml-2 h-8 px-2">
+            <Link to="/">
+              <ArrowLeft />
+              Quotations
+            </Link>
+          </Button>
+        </div>
         <CardTitle className="text-2xl font-semibold tracking-tight">
-          Calculator
+          {quotation.customer.name.trim() || "New quotation"}
         </CardTitle>
         <CardDescription>
-          Build a quote from your plates, processing, and pricing.
+          Customer details and the quote for this job.
         </CardDescription>
         <CardAction className="flex flex-col items-end gap-0.5">
           <span className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -51,6 +86,18 @@ export function CalculatorPage() {
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6">
+        <CardSection
+          title="Customer"
+          description="Who this quotation is for."
+        >
+          <CustomerFields
+            customer={quotation.customer}
+            onChange={(customer) => updateQuotation(quotation.id, { customer })}
+          />
+        </CardSection>
+
+        <Separator />
+
         {!settingsReady && (
           <Alert>
             <Settings2 />
@@ -81,8 +128,8 @@ export function CalculatorPage() {
           >
             <PlatesSection
               settings={data.settings}
-              plates={data.plates}
-              onChange={setPlates}
+              plates={quotation.plates}
+              onChange={(plates) => updateQuotation(quotation.id, { plates })}
             />
           </CardSection>
 
@@ -93,8 +140,10 @@ export function CalculatorPage() {
             description="Labour and parts added on top of printing."
           >
             <ProcessingFields
-              processing={data.processing}
-              onChange={setProcessing}
+              processing={quotation.processing}
+              onChange={(processing) =>
+                updateQuotation(quotation.id, { processing })
+              }
             />
           </CardSection>
 
@@ -106,10 +155,10 @@ export function CalculatorPage() {
           >
             <PricingFields
               settings={data.settings}
-              plates={data.plates}
-              processing={data.processing}
-              pricing={data.pricing}
-              onChange={setPricing}
+              plates={quotation.plates}
+              processing={quotation.processing}
+              pricing={quotation.pricing}
+              onChange={(pricing) => updateQuotation(quotation.id, { pricing })}
             />
           </CardSection>
         </div>

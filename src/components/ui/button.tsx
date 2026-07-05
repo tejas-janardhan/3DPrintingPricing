@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Slot as SlotPrimitive } from "radix-ui";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
@@ -32,13 +33,18 @@ function Button({
   className,
   variant,
   size,
-  type = "button",
+  asChild = false,
+  type,
   ...props
-}: React.ComponentProps<"button"> & VariantProps<typeof buttonVariants>) {
+}: React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? SlotPrimitive.Slot : "button";
   return (
-    <button
+    <Comp
       data-slot="button"
-      type={type}
+      // Only a real <button> carries a type; forwarding it to a Slot child
+      // (e.g. an <a>) would emit an invalid attribute.
+      type={asChild ? undefined : (type ?? "button")}
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />

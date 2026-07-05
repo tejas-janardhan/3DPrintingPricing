@@ -1,8 +1,8 @@
-import { EMPTY_APP_DATA, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PRINTER_COST, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
+import { EMPTY_APP_DATA, EMPTY_CUSTOMER, EMPTY_PLATE, EMPTY_PRICING, EMPTY_PRINTER_COST, EMPTY_PROCESSING, EMPTY_SETTINGS } from "@/config/constants";
 import { defaultPlateName } from "@/lib/plates";
 import { toast } from "sonner";
 import { migrate, SCHEMA_VERSION } from "./migrations";
-import type { AppData, PlateInputs, PricingInputs, PrinterCostInputs, Settings } from "@/types";
+import type { AppData, Customer, PlateInputs, PricingInputs, PrinterCostInputs, Quotation, Settings } from "@/types";
 
 export type { AppData } from "@/types";
 
@@ -23,30 +23,66 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
  * valid AppData, filling any missing fields from the empty defaults. Doubles as
  * validation for imported backups. Cross-version upgrades belong in `migrate`.
  */
+/** Coerces one raw plate into a valid PlateInputs, filling defaults. */
+function mergePlate(plate: unknown, index: number): PlateInputs {
+  const source = isObject(plate) ? plate : {};
+  return {
+    ...EMPTY_PLATE,
+    ...(source as Partial<PlateInputs>),
+    id:
+      typeof source.id === "string" && source.id
+        ? source.id
+        : `plate-${index + 1}`,
+    name:
+      typeof source.name === "string" && source.name
+        ? source.name
+        : defaultPlateName(index),
+  };
+}
+
+/** Coerces one raw quotation into a valid Quotation, filling defaults. */
+function mergeQuotation(input: unknown, index: number): Quotation {
+  const source = isObject(input) ? input : {};
+  const customer = isObject(source.customer) ? source.customer : {};
+
+  const rawPlates = Array.isArray(source.plates) ? source.plates : [];
+  const plates = (rawPlates.length ? rawPlates : [EMPTY_PLATE]).map(mergePlate);
+
+  const now = new Date().toISOString();
+  return {
+    id:
+      typeof source.id === "string" && source.id
+        ? source.id
+        : `quote-${index + 1}`,
+    customer: {
+      ...EMPTY_CUSTOMER,
+      ...(customer as Partial<Customer>),
+    },
+    plates,
+    processing: {
+      ...EMPTY_PROCESSING,
+      ...(isObject(source.processing) ? source.processing : {}),
+    },
+    pricing: {
+      ...EMPTY_PRICING,
+      ...(isObject(source.pricing) ? (source.pricing as Partial<PricingInputs>) : {}),
+    },
+    finalPrice:
+      typeof source.finalPrice === "number" && Number.isFinite(source.finalPrice)
+        ? source.finalPrice
+        : 0,
+    createdAt: typeof source.createdAt === "string" ? source.createdAt : now,
+    updatedAt: typeof source.updatedAt === "string" ? source.updatedAt : now,
+  };
+}
+
 export function mergeAppData(input: unknown): AppData {
   if (!isObject(input)) return EMPTY_APP_DATA;
 
   const settings = isObject(input.settings) ? input.settings : {};
   const byFilament = isObject(settings.byFilament) ? settings.byFilament : {};
 
-  const rawPlates = Array.isArray(input.plates) ? input.plates : [];
-  const plates = (rawPlates.length ? rawPlates : [EMPTY_PLATE]).map(
-    (plate, index): PlateInputs => {
-      const source = isObject(plate) ? plate : {};
-      return {
-        ...EMPTY_PLATE,
-        ...(source as Partial<PlateInputs>),
-        id:
-          typeof source.id === "string" && source.id
-            ? source.id
-            : `plate-${index + 1}`,
-        name:
-          typeof source.name === "string" && source.name
-            ? source.name
-            : defaultPlateName(index),
-      };
-    },
-  );
+  const rawQuotations = Array.isArray(input.quotations) ? input.quotations : [];
 
   return {
     settings: {
@@ -63,15 +99,7 @@ export function mergeAppData(input: unknown): AppData {
         },
       },
     },
-    plates,
-    processing: {
-      ...EMPTY_PROCESSING,
-      ...(isObject(input.processing) ? input.processing : {}),
-    },
-    pricing: {
-      ...EMPTY_PRICING,
-      ...(isObject(input.pricing) ? (input.pricing as Partial<PricingInputs>) : {}),
-    },
+    quotations: rawQuotations.map(mergeQuotation),
     printerCost: {
       ...EMPTY_PRINTER_COST,
       ...(isObject(input.printerCost)
@@ -166,7 +194,9 @@ const BACKUP_APP_ID = "3d-printing-pricing";
 // wrapper) — independent of the data's SCHEMA_VERSION, which is carried inside
 // `data` itself. Only bump this if the wrapper structure changes.
 const BACKUP_VERSION = 1;
-const KNOWN_KEYS = ["settings", "plates", "plate", "processing", "pricing", "printerCost"] as const;
+// Includes legacy keys (plate/plates/processing/pricing) so pre-v3 backups are
+// still recognised; `migrate` folds them into `quotations` before merging.
+const KNOWN_KEYS = ["settings", "quotations", "printerCost", "plates", "plate", "processing", "pricing"] as const;
 
 export type Backup = {
   app: string;

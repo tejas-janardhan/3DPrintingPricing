@@ -1,4 +1,4 @@
-import type { AppData, FilamentType, PlateInputs, PricingInputs, PrinterCostInputs, ProcessingInputs, Settings } from "@/types";
+import type { AppData, Customer, FilamentType, PlateInputs, PricingInputs, PrinterCostInputs, ProcessingInputs, Settings } from "@/types";
 
 export type { FilamentType } from "@/types";
 
@@ -59,11 +59,15 @@ export const EMPTY_PRINTER_COST: PrinterCostInputs = {
   months: "",
 };
 
+export const EMPTY_CUSTOMER: Customer = {
+  name: "",
+  phone: "",
+  address: "",
+};
+
 export const EMPTY_APP_DATA: AppData = {
   settings: EMPTY_SETTINGS,
-  plates: [EMPTY_PLATE],
-  processing: EMPTY_PROCESSING,
-  pricing: EMPTY_PRICING,
+  quotations: [],
   printerCost: EMPTY_PRINTER_COST,
 };
 
