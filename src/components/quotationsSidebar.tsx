@@ -7,7 +7,7 @@ import { areSettingsEqual } from "@/lib/settings";
 import { quotationTitle } from "@/lib/quotations";
 import { useAppState } from "@/store/appStateContext";
 
-export function QuotationsSidebar() {
+export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
   const { data, addQuotation } = useAppState();
   const navigate = useNavigate();
 
@@ -18,10 +18,12 @@ export function QuotationsSidebar() {
 
   return (
     <aside className="flex w-72 shrink-0 flex-col gap-3">
-      <Button size="sm" onClick={handleNew} className="w-full">
-        <Plus />
-        Add quote
-      </Button>
+      {showAdd && (
+        <Button size="sm" onClick={handleNew} className="w-full">
+          <Plus />
+          Add quote
+        </Button>
+      )}
 
       {data.quotations.length === 0 ? (
         <p className="px-1 py-6 text-center text-sm text-muted-foreground">

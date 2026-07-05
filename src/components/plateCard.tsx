@@ -46,7 +46,7 @@ export function PlateCard({
   ];
 
   return (
-    <div className="flex w-72 flex-col gap-6 rounded-lg border bg-muted/30 p-4">
+    <div className="flex w-94 shrink-0 flex-col gap-6 rounded-lg border bg-muted/30 p-4">
       <div className="flex items-center justify-between gap-2">
         <input
           type="text"
@@ -67,7 +67,6 @@ export function PlateCard({
           </Button>
         )}
       </div>
-
       <div className="flex w-full flex-col gap-6">
         {!filamentReady && (
           <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">

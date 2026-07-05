@@ -15,6 +15,8 @@ export type Customer = {
 
 export type Quotation = {
   id: string;
+  /** Optional user-given name for the quote; falls back to the customer name. */
+  name: string;
   customer: Customer;
   /** Snapshot of settings at creation; the quote is always priced against this. */
   settings: Settings;

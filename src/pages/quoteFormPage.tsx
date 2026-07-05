@@ -45,10 +45,19 @@ export function QuoteFormPage() {
     <Card>
       <CardHeader className="border-b pb-6">
         <CardTitle className="text-2xl font-semibold tracking-tight">
-          {quotation.customer.name.trim() || "New quotation"}
+          <input
+            type="text"
+            aria-label="Quote name"
+            value={quotation.name}
+            onChange={(event) =>
+              updateQuotation(quotation.id, { name: event.target.value })
+            }
+            placeholder={quotation.customer.name.trim() || "New quotation"}
+            className="w-full min-w-0 border-b border-transparent bg-transparent outline-none transition-colors placeholder:text-muted-foreground hover:border-border focus:border-ring"
+          />
         </CardTitle>
         <CardDescription>
-          Customer details and the quote for this job.
+          Name this quote, then fill in the details for the job.
         </CardDescription>
         <CardAction className="flex flex-col items-end gap-2">
           <div className="flex flex-col items-end gap-0.5">
@@ -69,7 +78,11 @@ export function QuoteFormPage() {
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6">
-        <CardSection title="Customer" description="Who this quotation is for.">
+        <CardSection
+          title="Customer"
+          description="Who this quotation is for."
+          collapsible
+        >
           <CustomerFields
             customer={quotation.customer}
             onChange={(customer) => updateQuotation(quotation.id, { customer })}
@@ -105,6 +118,7 @@ export function QuoteFormPage() {
           <CardSection
             title="Plates"
             description="Add a plate for each print in the job."
+            collapsible
           >
             <PlatesSection
               settings={quotation.settings}
@@ -118,6 +132,7 @@ export function QuoteFormPage() {
           <CardSection
             title="Pre & Post Processing"
             description="Labour and parts added on top of printing."
+            collapsible
           >
             <ProcessingFields
               processing={quotation.processing}
@@ -132,6 +147,7 @@ export function QuoteFormPage() {
           <CardSection
             title="Pricing"
             description="Markup, shipping, and your final quote."
+            collapsible
           >
             <PricingFields
               settings={quotation.settings}

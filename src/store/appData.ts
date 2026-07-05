@@ -78,6 +78,7 @@ function mergeQuotation(
       typeof source.id === "string" && source.id
         ? source.id
         : `quote-${index + 1}`,
+    name: typeof source.name === "string" ? source.name : "",
     customer: {
       ...EMPTY_CUSTOMER,
       ...(customer as Partial<Customer>),

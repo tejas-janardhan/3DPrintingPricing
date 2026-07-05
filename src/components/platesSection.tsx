@@ -30,7 +30,7 @@ export function PlatesSection({
   const canAddPlate = !atPlateLimit && (lastPlate ? isPlateComplete(lastPlate) : true);
 
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
+    <div className="flex flex-wrap gap-4">
       {plates.map((plate) => (
         <PlateCard
           key={plate.id}
@@ -44,7 +44,7 @@ export function PlatesSection({
         type="button"
         disabled={!canAddPlate}
         onClick={addPlate}
-        className="flex w-72 min-h-40 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-transparent text-sm font-medium text-muted-foreground transition-colors hover:border-ring hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+        className="flex w-72 min-h-40 flex-col items-center justify-center gap-2 rounded-lg bg-transparent text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
       >
         <span className="flex size-9 items-center justify-center rounded-full border border-dashed border-current">
           <Plus className="size-4" />

@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Copy, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, Copy, Pencil, Trash2 } from "lucide-react";
 import { CardSection } from "@/components/section";
 import { QuoteNotFound } from "@/components/quoteNotFound";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { FILAMENT_TYPE_OPTIONS } from "@/config/constants";
+import type { PlateInputs, Settings } from "@/types";
 import {
   Card,
   CardAction,
@@ -57,6 +60,83 @@ function PriceRow({
     >
       <span>{label}</span>
       <span className="tabular-nums">{formatRs(value)}</span>
+    </div>
+  );
+}
+
+/** A muted label/value row for secondary detail inside a "See more". */
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-8 text-sm text-muted-foreground">
+      <span>{label}</span>
+      <span className="tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+/** A "See more" toggle that reveals extra detail rows with an animation. */
+function SeeMore({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col">
+      <div
+        className={cn(
+          "grid transition-all duration-300 ease-in-out",
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-2 pb-2">{children}</div>
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="self-start px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground"
+        onClick={() => setOpen((shown) => !shown)}
+      >
+        {open ? "See less" : "See more"}
+        <ChevronDown
+          className={cn(
+            "size-3.5 transition-transform duration-300",
+            open && "rotate-180",
+          )}
+        />
+      </Button>
+    </div>
+  );
+}
+
+const filamentLabel = (value: string) =>
+  FILAMENT_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? "—";
+
+/** One plate: cost row plus a "See more" with its print inputs. */
+function PlateRow({
+  plate,
+  settings,
+}: {
+  plate: PlateInputs;
+  settings: Settings;
+}) {
+  const hours = plate.printTimeHours.trim() || "0";
+  const minutes = plate.printTimeMinutes.trim() || "0";
+  const weight = plate.printWeight.trim() || "0";
+  const price = plate.filamentPrice.trim();
+  return (
+    <div className="flex flex-col gap-1">
+      <PriceRow
+        label={plate.name}
+        value={computePlateCost(settings, plate).plateCost}
+      />
+      <SeeMore>
+        <DetailRow label="Filament Type" value={filamentLabel(plate.filamentType)} />
+        <DetailRow
+          label="Filament Pricing"
+          value={price ? `${formatRs(Number(price))} /kg` : "—"}
+        />
+        <DetailRow label="Print Time" value={`${hours}h ${minutes}m`} />
+        <DetailRow label="Print Weight" value={`${weight} g`} />
+      </SeeMore>
     </div>
   );
 }
@@ -180,12 +260,12 @@ export function QuoteDetailPage() {
         <Separator />
 
         <CardSection title="Plates">
-          <div className="flex max-w-md flex-col gap-2">
+          <div className="flex max-w-md flex-col gap-3">
             {quotation.plates.map((plate) => (
-              <PriceRow
+              <PlateRow
                 key={plate.id}
-                label={plate.name}
-                value={computePlateCost(quotation.settings, plate).plateCost}
+                plate={plate}
+                settings={quotation.settings}
               />
             ))}
           </div>
@@ -195,9 +275,20 @@ export function QuoteDetailPage() {
 
         <CardSection title="Pricing">
           <div className="flex max-w-md flex-col gap-2">
-            <PriceRow label="Wage Cost" value={pricing.wageCost} />
-            <PriceRow label="Total Print Cost" value={pricing.printCost} />
+            <SeeMore>
+              <PriceRow label="Wage Cost" value={pricing.wageCost} />
+              <PriceRow label="Total Print Cost" value={pricing.printCost} />
+              <DetailRow
+                label="Markup"
+                value={`${quotation.pricing.markup.trim() || "0"}%`}
+              />
+              <PriceRow
+                label="Shipping Cost"
+                value={Number(quotation.pricing.shipping.trim() || "0")}
+              />
+            </SeeMore>
             <PriceRow label="Last Price" value={pricing.lastPrice} />
+            <Separator className="my-1" />
             <PriceRow label="Final Price" value={pricing.finalCost} />
             <PriceRow label="Tax" value={pricing.tax} />
             <Separator className="my-1" />

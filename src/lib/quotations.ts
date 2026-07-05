@@ -19,6 +19,7 @@ export function makeQuotation(settings: Settings): Quotation {
   const now = new Date().toISOString();
   return {
     id: newQuotationId(),
+    name: "",
     customer: { ...EMPTY_CUSTOMER },
     settings: cloneSettings(settings),
     plates: [makePlate(0)],
@@ -43,6 +44,7 @@ export function duplicateQuotation(
   }));
   return {
     id,
+    name: source.name,
     customer: { ...source.customer },
     settings: cloneSettings(settings),
     plates,
@@ -62,7 +64,11 @@ export function isCustomerComplete(customer: Customer): boolean {
   return customer.name.trim() !== "" && customer.phone.trim() !== "";
 }
 
-/** Display title for a quotation: the customer's name, or a fallback. */
+/** Display title: the quote's name, else the customer's name, else a fallback. */
 export function quotationTitle(quotation: Quotation): string {
-  return quotation.customer.name.trim() || "Untitled quotation";
+  return (
+    quotation.name.trim() ||
+    quotation.customer.name.trim() ||
+    "Untitled quotation"
+  );
 }

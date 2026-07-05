@@ -8,7 +8,7 @@ import type {
 
 /** Fields of a quotation the user can edit; id/timestamps/finalPrice are managed. */
 export type QuotationPatch = Partial<
-  Pick<Quotation, "customer" | "plates" | "processing" | "pricing">
+  Pick<Quotation, "name" | "customer" | "plates" | "processing" | "pricing">
 >;
 
 export type AppStateContextValue = {
