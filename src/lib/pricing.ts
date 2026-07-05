@@ -76,7 +76,8 @@ export function computeFinalPricing({
 }): FinalPricing {
   const printCost = plates.reduce(
     (total, plate) =>
-      total + computePlateCost(settings, plate).plateCost * plateQuantity(plate),
+      total +
+      computePlateCost(settings, plate).plateCost * plateQuantity(plate),
     0,
   );
 
@@ -89,8 +90,11 @@ export function computeFinalPricing({
   const lastPrice = wageCost + printCost + num(processing.partsCost);
   const finalCost = Math.ceil(lastPrice * (1 + num(pricing.markup) / 100));
   const tax = Math.ceil((finalCost * num(settings.taxPercent)) / 100);
+  // No print cost means no real quote yet — keep the final price at zero.
   const finalPriceIncShipping =
-    Math.ceil((finalCost + tax + num(pricing.shipping)) / 10) * 10;
+    printCost > 0
+      ? Math.ceil((finalCost + tax + num(pricing.shipping)) / 10) * 10
+      : 0;
 
   const totalWeight = plates.reduce(
     (total, plate) => total + num(plate.printWeight) * plateQuantity(plate),

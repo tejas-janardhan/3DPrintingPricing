@@ -29,7 +29,8 @@ type GlobalSettingField =
   | "multiplier"
   | "taxPercent"
   | "defaultMarkup"
-  | "defaultShipping";
+  | "defaultShipping"
+  | "defaultProcessingMinutes";
 
 export function SettingsCard({
   settings,
@@ -249,8 +250,8 @@ export function SettingsCard({
         <Separator />
 
         <CardSection
-          title="Default Pricing"
-          description="Pre-filled into each new quote's pricing."
+          title="Defaults"
+          description="Pre-filled into each new quote."
         >
           <Form orientation="horizontal" className="flex-wrap">
             <FieldInput
@@ -270,6 +271,18 @@ export function SettingsCard({
               name={"defaultShipping"}
               value={settings.defaultShipping}
               onChange={(value) => updateGlobalSetting("defaultShipping", value)}
+              disabled={!isEditing}
+              className="w-48"
+            />
+            <FieldInput
+              label={"Default 3D Processing"}
+              placeholder={"Enter Minutes"}
+              description="Processing minutes seeded on new quotes"
+              name={"defaultProcessingMinutes"}
+              value={settings.defaultProcessingMinutes}
+              onChange={(value) =>
+                updateGlobalSetting("defaultProcessingMinutes", value)
+              }
               disabled={!isEditing}
               className="w-48"
             />

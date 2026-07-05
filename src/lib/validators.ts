@@ -14,3 +14,11 @@ export const requiredNumber =
     if (n < 0) return `${label} cannot be negative`;
     return undefined;
   };
+
+/** Like requiredNumber but allows an empty value. */
+export const optionalNumber =
+  (label: string): Validator =>
+  (value) => {
+    if (value.trim() === "") return undefined;
+    return requiredNumber(label)(value);
+  };

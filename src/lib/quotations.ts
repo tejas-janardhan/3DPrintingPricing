@@ -24,7 +24,10 @@ export function makeQuotation(settings: Settings): Quotation {
     customer: { ...EMPTY_CUSTOMER },
     settings: cloneSettings(settings),
     plates: [makePlate(0)],
-    processing: { ...EMPTY_PROCESSING },
+    processing: {
+      ...EMPTY_PROCESSING,
+      processingMinutes: settings.defaultProcessingMinutes,
+    },
     pricing: {
       ...EMPTY_PRICING,
       markup: settings.defaultMarkup,

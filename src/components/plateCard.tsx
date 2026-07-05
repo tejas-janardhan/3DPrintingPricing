@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { ChevronDown, Copy, Settings2, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { ChevronDown, Copy, FileUp, Loader2, Settings2, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import FieldSelect from "./fieldSelect";
 import { FieldInput } from "./fieldInput";
 import { Form } from "./form";
@@ -13,6 +14,11 @@ import {
 import { cn } from "@/lib/utils";
 import { required, requiredNumber } from "@/lib/validators";
 import { computePlateCost, formatRs, plateQuantity } from "@/lib/pricing";
+import {
+  formatGrams,
+  parseSlicedFile,
+  splitPrintTime,
+} from "@/lib/sliceImport";
 import { isFilamentSettingsComplete } from "@/lib/settings";
 import type { FilamentType, PlateInputs, Settings } from "@/types";
 
@@ -29,8 +35,35 @@ export function PlateCard({
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showQuantity, setShowQuantity] = useState(plateQuantity(plate) > 1);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filamentReady = isFilamentSettingsComplete(settings, plate.filamentType);
+
+  const handleSlicedFile = async (file: File) => {
+    setImporting(true);
+    try {
+      const info = await parseSlicedFile(file);
+      const { hours, minutes } = splitPrintTime(info.printTimeSeconds);
+      onChange({
+        ...plate,
+        printTimeHours: hours,
+        printTimeMinutes: minutes,
+        printWeight: formatGrams(info.weightGrams),
+      });
+      toast.success(
+        info.plateCount > 1
+          ? `Filled print time & weight from ${info.plateCount} plates.`
+          : "Filled print time & weight from sliced file.",
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Couldn't read that file.",
+      );
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const updatePlate = <K extends keyof PlateInputs>(
     field: K,
@@ -109,6 +142,36 @@ export function PlateCard({
             validate={required("Filament pricing")}
             disabled={!filamentReady}
           />
+          <div className="flex flex-col gap-1.5">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".3mf"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) handleSlicedFile(file);
+                event.target.value = "";
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!filamentReady || importing}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {importing ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <FileUp className="size-3.5" />
+              )}
+              Auto-fill from sliced .3mf
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Import print time & weight from a Bambu Studio / OrcaSlicer file.
+            </p>
+          </div>
           <div className="flex gap-4">
             <FieldInput
               label={"Print Time (Hours)"}

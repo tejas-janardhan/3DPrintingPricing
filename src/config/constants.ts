@@ -32,6 +32,7 @@ export const EMPTY_SETTINGS: Settings = {
   taxPercent: "",
   defaultMarkup: "",
   defaultShipping: "",
+  defaultProcessingMinutes: "",
   byFilament: {
     pla: { costPerHour: "", powerConsumption: "" },
     petg: { costPerHour: "", powerConsumption: "" },

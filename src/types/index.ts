@@ -88,9 +88,10 @@ export type Settings = {
   electricityCost: string;
   multiplier: string;
   taxPercent: string;
-  /** Seeded into a new quotation's pricing on creation. */
+  /** Seeded into a new quotation's pricing/processing on creation. */
   defaultMarkup: string;
   defaultShipping: string;
+  defaultProcessingMinutes: string;
   byFilament: Record<FilamentType, FilamentSettings>;
   byPrinter: Record<PrinterType, PrinterSettings>;
 };

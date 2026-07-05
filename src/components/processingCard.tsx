@@ -1,6 +1,6 @@
 import { FieldInput } from "./fieldInput";
 import { Form } from "./form";
-import { requiredNumber } from "@/lib/validators";
+import { optionalNumber, requiredNumber } from "@/lib/validators";
 import type { ProcessingInputs } from "@/types";
 
 export function ProcessingFields({
@@ -33,7 +33,7 @@ export function ProcessingFields({
             name={"postProcessingHours"}
             value={processing.postProcessingHours}
             onChange={(value) => updateWork("postProcessingHours", value)}
-            validate={requiredNumber("Hours")}
+            validate={optionalNumber("Hours")}
           />
           <FieldInput
             label={"Post Processing (Minutes)"}
@@ -41,7 +41,7 @@ export function ProcessingFields({
             name={"postProcessingMinutes"}
             value={processing.postProcessingMinutes}
             onChange={(value) => updateWork("postProcessingMinutes", value)}
-            validate={requiredNumber("Minutes")}
+            validate={optionalNumber("Minutes")}
           />
         </div>
         <FieldInput
@@ -51,7 +51,7 @@ export function ProcessingFields({
           name={"partsCost"}
           value={processing.partsCost}
           onChange={(value) => updateWork("partsCost", value)}
-          validate={requiredNumber("Parts cost")}
+          validate={optionalNumber("Parts cost")}
         />
     </Form>
   );
