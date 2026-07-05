@@ -3,7 +3,7 @@ import { Layout } from "./layout";
 import { Nav } from "./components/nav";
 import { QuotationsLayout } from "./pages/quotationsLayout";
 import { QuotationsEmpty } from "./pages/quotationsEmpty";
-import { QuoteDetailPage } from "./pages/quoteDetailPage";
+import { QuoteDetailPage } from "./pages/quoteDetail/quoteDetailPage";
 import { QuoteFormPage } from "./pages/quoteFormPage";
 import { SettingsPage } from "./pages/settingsPage";
 import { PrinterCostPage } from "./pages/printerCostPage";

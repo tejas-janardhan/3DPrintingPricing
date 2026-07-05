@@ -35,6 +35,7 @@ export function PlateCard({
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [showQuantity, setShowQuantity] = useState(plateQuantity(plate) > 1);
+  const [showImport, setShowImport] = useState(false);
   const [importing, setImporting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -142,36 +143,6 @@ export function PlateCard({
             validate={required("Filament pricing")}
             disabled={!filamentReady}
           />
-          <div className="flex flex-col gap-1.5">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".3mf"
-              className="hidden"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) handleSlicedFile(file);
-                event.target.value = "";
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={!filamentReady || importing}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {importing ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <FileUp className="size-3.5" />
-              )}
-              Auto-fill from sliced .3mf
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Import print time & weight from a Bambu Studio / OrcaSlicer file.
-            </p>
-          </div>
           <div className="flex gap-4">
             <FieldInput
               label={"Print Time (Hours)"}
@@ -202,8 +173,53 @@ export function PlateCard({
             validate={requiredNumber("Print weight")}
             disabled={!filamentReady}
           />
-          {showQuantity ? (
+          {showImport && (
+            <div className="flex flex-col gap-1.5 rounded-md border border-dashed border-border p-3 duration-300 animate-in fade-in slide-in-from-top-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Auto-fill from sliced .3mf</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Dismiss sliced-file import"
+                  className="size-7 shrink-0 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  onClick={() => setShowImport(false)}
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".3mf"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) handleSlicedFile(file);
+                  event.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={!filamentReady || importing}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {importing ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <FileUp className="size-3.5" />
+                )}
+                Choose sliced file
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Import print time & weight from a Bambu Studio / OrcaSlicer file.
+              </p>
+            </div>
+          )}
+          {showQuantity && (
             <FieldInput
+              className="duration-300 animate-in fade-in slide-in-from-top-2"
               label={"Quantity"}
               placeholder={"Enter Quantity"}
               description="Copies of this plate — multiplies its cost"
@@ -212,18 +228,49 @@ export function PlateCard({
               onChange={(value) => updatePlate("quantity", value)}
               validate={requiredNumber("Quantity")}
               disabled={!filamentReady}
+              labelAction={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Dismiss quantity"
+                  className="size-5 shrink-0 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  onClick={() => {
+                    setShowQuantity(false);
+                    updatePlate("quantity", "1");
+                  }}
+                >
+                  <X className="size-3.5" />
+                </Button>
+              }
             />
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="self-start px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground"
-              disabled={!filamentReady}
-              onClick={() => setShowQuantity(true)}
-            >
-              <Copy className="size-3.5" />
-              Add quantity
-            </Button>
+          )}
+          {(!showImport || !showQuantity) && (
+            <div className="flex flex-wrap gap-4">
+              {!showImport && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  disabled={!filamentReady}
+                  onClick={() => setShowImport(true)}
+                >
+                  <FileUp className="size-3.5" />
+                  Auto-fill from sliced .3mf
+                </Button>
+              )}
+              {!showQuantity && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  disabled={!filamentReady}
+                  onClick={() => setShowQuantity(true)}
+                >
+                  <Copy className="size-3.5" />
+                  Add quantity
+                </Button>
+              )}
+            </div>
           )}
         </Form>
 

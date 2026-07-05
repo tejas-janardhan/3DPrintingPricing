@@ -42,7 +42,11 @@ export function PricingFields({
 
   const linesAfterMarkup = [
     { label: "Final Price", value: finalCost },
-    { label: "Tax", value: tax },
+    {
+      label: "Tax",
+      value: tax,
+      info: `Taxed at ${settings.taxPercent.trim() || "0"}%`,
+    },
   ];
 
   return (
@@ -75,7 +79,23 @@ export function PricingFields({
               key={line.label}
               className="flex items-center justify-between gap-8"
             >
-              <span>{line.label}</span>
+              <span className="flex items-center gap-1.5">
+                {line.label}
+                {line.info && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={line.info}
+                        className="text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <Info className="size-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>{line.info}</TooltipContent>
+                  </Tooltip>
+                )}
+              </span>
               <span className="tabular-nums">{formatRs(line.value)}</span>
             </div>
           ))}

@@ -42,9 +42,8 @@ export function QuoteFormPage() {
       pricing: next,
     });
   };
-  const setSection =
-    (key: keyof typeof openSections) => (open: boolean) =>
-      setOpenSections((sections) => ({ ...sections, [key]: open }));
+  const setSection = (key: keyof typeof openSections) => (open: boolean) =>
+    setOpenSections((sections) => ({ ...sections, [key]: open }));
 
   const quotation = data.quotations.find((q) => q.id === id);
   if (!quotation) return <QuoteNotFound />;
@@ -65,7 +64,7 @@ export function QuoteFormPage() {
   return (
     <Card>
       <CardHeader className="border-b pb-6">
-        <CardTitle className="text-2xl font-semibold tracking-tight">
+        <CardTitle className="text-2xl font-semibold tracking-tight w-1/2">
           <input
             type="text"
             aria-label="Quote name"
@@ -118,9 +117,7 @@ export function QuoteFormPage() {
             onChange={(customer) => updateQuotation(quotation.id, { customer })}
           />
         </CardSection>
-
         <Separator />
-
         {!settingsReady && (
           <Alert>
             <Settings2 />
@@ -136,7 +133,6 @@ export function QuoteFormPage() {
             </AlertDescription>
           </Alert>
         )}
-
         <div
           className={
             settingsReady
@@ -176,9 +172,7 @@ export function QuoteFormPage() {
               }
             />
           </CardSection>
-
           <Separator />
-
           <CardSection
             title="Pricing"
             description="Markup, shipping, and your final quote."

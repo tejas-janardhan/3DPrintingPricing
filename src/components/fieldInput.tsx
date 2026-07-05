@@ -19,6 +19,8 @@ export function FieldInput(props: {
   validate?: Validator;
   className?: string;
   showError?: boolean;
+  /** Optional element rendered inline next to the label (e.g. a dismiss button). */
+  labelAction?: React.ReactNode;
 }) {
   const {
     name,
@@ -31,6 +33,7 @@ export function FieldInput(props: {
     validate,
     className,
     showError,
+    labelAction,
   } = props;
   const [internal, setInternal] = useState("");
   const [touched, setTouched] = useState(false);
@@ -45,7 +48,14 @@ export function FieldInput(props: {
 
   return (
     <Field className={className} data-invalid={error ? "true" : undefined}>
-      <FieldLabel htmlFor={name}>{label}</FieldLabel>
+      {labelAction ? (
+        <div className="flex w-fit items-center gap-1">
+          <FieldLabel htmlFor={name}>{label}</FieldLabel>
+          {labelAction}
+        </div>
+      ) : (
+        <FieldLabel htmlFor={name}>{label}</FieldLabel>
+      )}
       <div className="flex flex-col gap-1">
         <Input
           id={name}

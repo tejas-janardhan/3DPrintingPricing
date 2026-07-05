@@ -22,9 +22,9 @@ export function splitPrintTime(seconds: number): {
   };
 }
 
-/** Grams rounded to at most 2 decimals, as a form-friendly string. */
+/** Grams rounded to at most 1 decimal, as a form-friendly string. */
 export function formatGrams(grams: number): string {
-  return String(Math.round(grams * 100) / 100);
+  return String(Math.round(grams * 10) / 10);
 }
 
 const num = (value: string | null | undefined) => {

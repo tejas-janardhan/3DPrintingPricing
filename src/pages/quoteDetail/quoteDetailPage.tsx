@@ -1,12 +1,17 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ChevronDown, Copy, Pencil, Trash2 } from "lucide-react";
+import {
+  ChevronDown,
+  ClipboardCopy,
+  Copy,
+  FileText,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import { toast } from "sonner";
 import { CardSection } from "@/components/section";
 import { QuoteNotFound } from "@/components/quoteNotFound";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { FILAMENT_TYPE_OPTIONS } from "@/config/constants";
-import type { PlateInputs } from "@/types";
 import {
   Card,
   CardAction,
@@ -27,122 +32,32 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatRs } from "@/lib/pricing";
 import { areSettingsEqual } from "@/lib/settings";
 import { quotationTitle } from "@/lib/quotations";
+import { openQuotePdf } from "@/lib/quoteDocument";
 import { useAppState } from "@/store/appStateContext";
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-baseline justify-between gap-8 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium text-foreground">{value}</span>
-    </div>
-  );
-}
-
-function PriceRow({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: number;
-  strong?: boolean;
-}) {
-  return (
-    <div
-      className={
-        strong
-          ? "flex items-center justify-between gap-8 text-base font-semibold"
-          : "flex items-center justify-between gap-8 text-sm text-muted-foreground"
-      }
-    >
-      <span>{label}</span>
-      <span className="tabular-nums">{formatRs(value)}</span>
-    </div>
-  );
-}
-
-/** A muted label/value row for secondary detail inside a "See more". */
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-8 text-sm text-muted-foreground">
-      <span>{label}</span>
-      <span className="tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-/** A "See more" toggle that reveals extra detail rows with an animation. */
-function SeeMore({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="flex flex-col">
-      <div
-        className={cn(
-          "grid transition-all duration-300 ease-in-out",
-          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
-        )}
-      >
-        <div className="overflow-hidden">
-          <div className="flex flex-col gap-2 pb-2">{children}</div>
-        </div>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="self-start px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground"
-        onClick={() => setOpen((shown) => !shown)}
-      >
-        {open ? "See less" : "See more"}
-        <ChevronDown
-          className={cn(
-            "size-3.5 transition-transform duration-300",
-            open && "rotate-180",
-          )}
-        />
-      </Button>
-    </div>
-  );
-}
-
-const filamentLabel = (value: string) =>
-  FILAMENT_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? "—";
-
-/** One plate: cost row plus a "See more" with its print inputs. */
-function PlateRow({
-  plate,
-  plateCost,
-}: {
-  plate: PlateInputs;
-  plateCost: number;
-}) {
-  const hours = plate.printTimeHours.trim() || "0";
-  const minutes = plate.printTimeMinutes.trim() || "0";
-  const weight = plate.printWeight.trim() || "0";
-  const price = plate.filamentPrice.trim();
-  return (
-    <div className="flex flex-col gap-1">
-      <SeeMore>
-        <DetailRow label="Filament Type" value={filamentLabel(plate.filamentType)} />
-        <DetailRow
-          label="Filament Pricing"
-          value={price ? `${formatRs(Number(price))} /kg` : "—"}
-        />
-        <DetailRow label="Print Time" value={`${hours}h ${minutes}m`} />
-        <DetailRow label="Print Weight" value={`${weight} g`} />
-      </SeeMore>
-      <PriceRow label={plate.name} value={plateCost} />
-    </div>
-  );
-}
+import { InfoRow } from "./components/infoRow";
+import { PriceRow } from "./components/priceRow";
+import { PlateRow } from "./components/plateRow";
+import { SeeMore } from "./components/seeMore";
+import { DetailRow } from "./components/detailRow";
 
 export function QuoteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data, duplicateQuotation, deleteQuotation } = useAppState();
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [includeDetails, setIncludeDetails] = useState(false);
 
   const quotation = data.quotations.find((q) => q.id === id);
   if (!quotation) return <QuoteNotFound />;
@@ -159,6 +74,25 @@ export function QuoteDetailPage() {
     deleteQuotation(quotation.id);
     setConfirmOpen(false);
     navigate("/");
+  };
+
+  const handleCopyPricing = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        formatRs(finalPricing.finalPriceIncShipping),
+      );
+      toast.success("Final price copied to clipboard.");
+    } catch {
+      toast.error("Couldn't copy to clipboard.");
+    }
+  };
+
+  const handleGenerateQuote = async () => {
+    if (await openQuotePdf(quotation, { includeDetails })) {
+      toast.success("Quote PDF downloaded.");
+    } else {
+      toast.error("Couldn't generate the quote PDF.");
+    }
   };
 
   return (
@@ -226,6 +160,37 @@ export function QuoteDetailPage() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleCopyPricing}>
+              <ClipboardCopy />
+              Copy pricing
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <FileText />
+                  Generate quote
+                  <ChevronDown className="text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Quote PDF</DropdownMenuLabel>
+                <DropdownMenuCheckboxItem
+                  checked={includeDetails}
+                  onCheckedChange={setIncludeDetails}
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  Include plate details
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={handleGenerateQuote}>
+                  <FileText />
+                  Download PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {outdated && (
@@ -283,7 +248,11 @@ export function QuoteDetailPage() {
             <PriceRow label="Last Price" value={finalPricing.lastPrice} />
             <Separator className="my-1" />
             <PriceRow label="Final Price" value={finalPricing.finalCost} />
-            <PriceRow label="Tax" value={finalPricing.tax} />
+            <PriceRow
+              label="Tax"
+              value={finalPricing.tax}
+              info={`Taxed at ${quotation.settings.taxPercent.trim() || "0"}% — frozen when this quote was created`}
+            />
             <Separator className="my-1" />
             <PriceRow
               label="Final Price Inc Shipping"
