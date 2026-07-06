@@ -19,6 +19,8 @@ export type AppStateContextValue = {
   addQuotation: () => string;
   /** Copies a quotation under current settings; returns the new id (or null if not found). */
   duplicateQuotation: (id: string) => string | null;
+  /** Re-syncs a quotation's settings snapshot to current global settings, unfreezing it and re-pricing (plates and other fields untouched). */
+  resyncQuotationSettings: (id: string) => void;
   /** Merges a patch into a quotation and refreshes its finalPrice snapshot. */
   updateQuotation: (id: string, patch: QuotationPatch) => void;
   deleteQuotation: (id: string) => void;

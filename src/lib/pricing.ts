@@ -96,6 +96,14 @@ export function computeFinalPricing({
       ? Math.ceil((finalCost + tax + num(pricing.shipping)) / 10) * 10
       : 0;
 
+  // Advance charged upfront when the order value exceeds the threshold.
+  const advance =
+    finalPriceIncShipping >= num(settings.advanceThreshold)
+      ? Math.round(
+          (finalPriceIncShipping * num(settings.advancePercent)) / 100 / 10,
+        ) * 10
+      : 0;
+
   const totalWeight = plates.reduce(
     (total, plate) => total + num(plate.printWeight) * plateQuantity(plate),
     0,
@@ -109,6 +117,7 @@ export function computeFinalPricing({
     finalCost,
     tax,
     finalPriceIncShipping,
+    advance,
     rsPerGram,
   };
 }

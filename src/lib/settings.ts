@@ -23,6 +23,8 @@ export function areSettingsEqual(a: Settings, b: Settings): boolean {
     a.electricityCost === b.electricityCost &&
     a.multiplier === b.multiplier &&
     a.taxPercent === b.taxPercent &&
+    a.advanceThreshold === b.advanceThreshold &&
+    a.advancePercent === b.advancePercent &&
     a.byFilament.pla.costPerHour === b.byFilament.pla.costPerHour &&
     a.byFilament.pla.powerConsumption === b.byFilament.pla.powerConsumption &&
     a.byFilament.petg.costPerHour === b.byFilament.petg.costPerHour &&

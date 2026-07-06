@@ -30,6 +30,8 @@ export const EMPTY_SETTINGS: Settings = {
   electricityCost: "",
   multiplier: "",
   taxPercent: "",
+  advanceThreshold: "",
+  advancePercent: "",
   defaultMarkup: "",
   defaultShipping: "",
   defaultProcessingMinutes: "",
@@ -86,6 +88,7 @@ export const EMPTY_FINAL_PRICING: FinalPricing = {
   finalCost: 0,
   tax: 0,
   finalPriceIncShipping: 0,
+  advance: 0,
   rsPerGram: 0,
 };
 

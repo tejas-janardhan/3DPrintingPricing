@@ -32,6 +32,7 @@ export function PricingFields({
     finalCost,
     tax,
     finalPriceIncShipping,
+    advance,
   } = computeFinalPricing({ settings, processing, plates, pricing });
 
   const linesBeforeMarkup = [
@@ -134,6 +135,36 @@ export function PricingFields({
             {formatRs(finalPriceIncShipping)}
           </span>
         </div>
+        {advance > 0 && (
+          <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center justify-between gap-8">
+              <span className="flex items-center gap-1.5">
+                Advance
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Advance info"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Info className="size-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {`${settings.advancePercent.trim() || "0"}% of the order value, due upfront`}
+                  </TooltipContent>
+                </Tooltip>
+              </span>
+              <span className="tabular-nums">{formatRs(advance)}</span>
+            </div>
+            <div className="flex items-center justify-between gap-8">
+              <span>Balance Due</span>
+              <span className="tabular-nums">
+                {formatRs(finalPriceIncShipping - advance)}
+              </span>
+            </div>
+          </div>
+        )}
     </div>
   );
 }

@@ -1,7 +1,11 @@
 import { formatRs, num, plateQuantity } from "@/lib/pricing";
 import { quotationTitle } from "@/lib/quotations";
+import { registerQuoteFont } from "@/lib/quoteFont";
 import { FILAMENT_TYPE_OPTIONS } from "@/config/constants";
 import type { Quotation } from "@/types";
+
+// jsPDF font family registered by registerQuoteFont; falls back to helvetica.
+const FONT = "Poppins";
 
 const filamentLabel = (value: string) =>
   FILAMENT_TYPE_OPTIONS.find((option) => option.value === value)?.label ?? "—";
@@ -54,8 +58,13 @@ export function plateAllocations(quotation: Quotation): {
   return { shipping, base, perPlate };
 }
 
-// Palette (RGB), mirroring the app's blue accent.
+// Palette (RGB), mirroring the app's blue accent. Dual-tone: a primary blue
+// paired with a deep navy and soft tints for bands, panels and striping.
 const BLUE: [number, number, number] = [37, 99, 235];
+const BLUE_DARK: [number, number, number] = [30, 58, 138];
+const BLUE_LIGHT: [number, number, number] = [191, 219, 254];
+const BLUE_50: [number, number, number] = [239, 246, 255];
+const WHITE: [number, number, number] = [255, 255, 255];
 const DARK: [number, number, number] = [26, 26, 26];
 const MUTED: [number, number, number] = [107, 114, 128];
 
@@ -84,38 +93,64 @@ export async function openQuotePdf(
       import("jspdf-autotable"),
     ]);
     const doc = new jsPDF({ unit: "pt", format: "a4" });
+    registerQuoteFont(doc);
+    doc.setFont(FONT, "normal");
     const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
     const margin = 48;
     const rightX = pageW - margin;
     const { finalPricing } = quotation;
     const { shipping, base, perPlate } = plateAllocations(quotation);
-    let y = margin + 4;
 
-    // Header
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(...BLUE);
-    doc.text("QUOTATION", margin, y);
+    // Draws small, letter-spaced uppercase labels (eyebrows). Right alignment
+    // is done manually because jsPDF's align ignores char spacing, which would
+    // push the label past the margin and misalign it with other right edges.
+    const charSpace = 1.6;
+    const eyebrow = (
+      text: string,
+      x: number,
+      yy: number,
+      color: [number, number, number],
+      align: "left" | "right" = "left",
+    ) => {
+      doc.setFont(FONT, "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(...color);
+      doc.setCharSpace(charSpace);
+      const spacedWidth =
+        doc.getTextWidth(text) + charSpace * (text.length - 1);
+      doc.text(text, align === "right" ? x - spacedWidth : x, yy);
+      doc.setCharSpace(0);
+    };
 
+    // Full-bleed header band with a lighter accent stripe beneath it.
+    const bandH = 116;
+    doc.setFillColor(...BLUE_DARK);
+    doc.rect(0, 0, pageW, bandH, "F");
+    doc.setFillColor(...BLUE);
+    doc.rect(0, bandH, pageW, 5, "F");
+
+    eyebrow("QUOTATION", margin, 48, BLUE_LIGHT);
+    doc.setFont(FONT, "bold");
     doc.setFontSize(22);
-    doc.setTextColor(...DARK);
-    y += 22;
-    doc.text(quotationTitle(quotation), margin, y);
+    doc.setTextColor(...WHITE);
+    doc.text(quotationTitle(quotation), margin, 78, {
+      maxWidth: pageW - margin * 2 - 130,
+    });
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...MUTED);
-    doc.text(quoteDate(quotation), rightX, y, { align: "right" });
+    eyebrow("DATE", rightX, 48, BLUE_LIGHT, "right");
+    doc.setFont(FONT, "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(...WHITE);
+    doc.text(quoteDate(quotation), rightX, 64, { align: "right" });
 
-    y += 12;
-    doc.setDrawColor(...BLUE);
-    doc.setLineWidth(2);
-    doc.line(margin, y, rightX, y);
-    y += 26;
+    let y = bandH + 5 + 42;
 
-    // Customer
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
+    // Customer ("Billed to")
+    eyebrow("BILLED TO", margin, y, MUTED);
+    y += 17;
+    doc.setFont(FONT, "bold");
+    doc.setFontSize(13);
     doc.setTextColor(...DARK);
     doc.text(quotation.customer.name.trim() || "—", margin, y);
     const contact = [
@@ -126,12 +161,12 @@ export async function openQuotePdf(
       .join("  ·  ");
     if (contact) {
       y += 15;
-      doc.setFont("helvetica", "normal");
+      doc.setFont(FONT, "normal");
       doc.setFontSize(10);
       doc.setTextColor(...MUTED);
       doc.text(contact, margin, y);
     }
-    y += 24;
+    y += 30;
 
     // Plate line items (customer-facing prices)
     const head = includeDetails
@@ -164,71 +199,123 @@ export async function openQuotePdf(
           0: { fontStyle: "bold" },
           1: { textColor: MUTED, fontSize: 9 },
           2: { halign: "right" },
-          3: { halign: "right", fontStyle: "bold" },
+          3: { halign: "right", fontStyle: "bold", textColor: BLUE_DARK },
         }
       : {
           0: { fontStyle: "bold" },
           1: { halign: "right" },
-          2: { halign: "right", fontStyle: "bold" },
+          2: { halign: "right", fontStyle: "bold", textColor: BLUE_DARK },
         };
 
+    eyebrow("ITEMS", margin, y, BLUE);
     autoTable(doc, {
-      startY: y,
+      startY: y + 10,
       head,
       body,
       theme: "plain",
+      styles: { font: FONT },
       margin: { left: margin, right: margin },
       headStyles: {
         fillColor: BLUE,
         textColor: 255,
         fontStyle: "bold",
         fontSize: 9,
-        cellPadding: { top: 6, bottom: 6, left: 8, right: 8 },
+        cellPadding: { top: 8, bottom: 8, left: 10, right: 10 },
       },
       bodyStyles: {
         fontSize: 10,
         textColor: DARK,
-        cellPadding: { top: 8, bottom: 8, left: 8, right: 8 },
-        lineColor: [240, 240, 240],
-        lineWidth: { bottom: 1, top: 0, left: 0, right: 0 },
+        cellPadding: { top: 9, bottom: 9, left: 10, right: 10 },
+        lineColor: BLUE_LIGHT,
+        lineWidth: { bottom: 0.5, top: 0, left: 0, right: 0 },
       },
+      alternateRowStyles: { fillColor: BLUE_50 },
       columnStyles,
     });
 
-    // Totals
+    // Totals panel (right-aligned)
     const finalY = (doc as unknown as { lastAutoTable: { finalY: number } })
       .lastAutoTable.finalY;
-    let ty = finalY + 28;
-    const labelX = rightX - 240;
+    const panelW = 250;
+    const panelX = rightX - panelW;
+    const padX = 16;
+    let ty = finalY + 34;
 
-    const totalRow = (label: string, value: string, strong = false) => {
-      doc.setFont("helvetica", strong ? "bold" : "normal");
-      doc.setFontSize(strong ? 14 : 10);
-      doc.setTextColor(...(strong ? DARK : MUTED));
-      doc.text(label, labelX, ty);
-      doc.setTextColor(...(strong ? BLUE : DARK));
-      doc.text(value, rightX, ty, { align: "right" });
-      ty += strong ? 4 : 18;
+    // A single label/value line within the panel.
+    const totalRow = (label: string, value: string) => {
+      doc.setFont(FONT, "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(...MUTED);
+      doc.text(label, panelX + padX, ty);
+      doc.setTextColor(...DARK);
+      doc.text(value, rightX - padX, ty, { align: "right" });
+      ty += 20;
     };
 
     totalRow("Subtotal", formatRs(base));
     totalRow("Shipping & handling", formatRs(shipping));
-    ty += 8;
-    doc.setDrawColor(...DARK);
-    doc.setLineWidth(1.5);
-    doc.line(labelX, ty, rightX, ty);
-    ty += 20;
-    totalRow("Total", formatRs(finalPricing.finalPriceIncShipping), true);
+
+    // Hero total box
+    ty += 4;
+    const boxH = 44;
+    doc.setFillColor(...BLUE_DARK);
+    doc.roundedRect(panelX, ty, panelW, boxH, 8, 8, "F");
+    const boxMid = ty + boxH / 2 + 5;
+    doc.setFont(FONT, "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...WHITE);
+    doc.text("Total", panelX + padX, boxMid);
+    doc.setFontSize(15);
+    doc.text(formatRs(finalPricing.finalPriceIncShipping), rightX - padX, boxMid, {
+      align: "right",
+    });
+    ty += boxH;
+
+    // Advance card, only when one is due.
+    if (finalPricing.advance > 0) {
+      const advancePct = quotation.settings.advancePercent.trim() || "0";
+      const balance = finalPricing.finalPriceIncShipping - finalPricing.advance;
+      ty += 14;
+      const cardH = 58;
+      doc.setFillColor(...BLUE_50);
+      doc.roundedRect(panelX, ty, panelW, cardH, 8, 8, "F");
+      doc.setFillColor(...BLUE);
+      doc.rect(panelX, ty + 8, 3, cardH - 16, "F");
+
+      let ry = ty + 24;
+      doc.setFont(FONT, "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(...MUTED);
+      doc.text(`Advance (${advancePct}%)`, panelX + padX, ry);
+      doc.setTextColor(...DARK);
+      doc.text(formatRs(finalPricing.advance), rightX - padX, ry, {
+        align: "right",
+      });
+      ry += 22;
+      doc.setFont(FONT, "bold");
+      doc.setTextColor(...BLUE_DARK);
+      doc.text("Balance due on delivery", panelX + padX, ry);
+      doc.text(formatRs(balance), rightX - padX, ry, { align: "right" });
+      ty += cardH;
+    }
 
     // Footer
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
+    const footY = pageH - 52;
+    doc.setDrawColor(...BLUE_LIGHT);
+    doc.setLineWidth(1);
+    doc.line(margin, footY, rightX, footY);
+    doc.setFont(FONT, "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...BLUE);
+    doc.text("Thank you for your business!", margin, footY + 20);
+    doc.setFont(FONT, "normal");
+    doc.setFontSize(8.5);
     doc.setTextColor(...MUTED);
     doc.text(
       `Generated on ${new Date().toLocaleDateString()}  ·  Prices in INR`,
-      pageW / 2,
-      doc.internal.pageSize.getHeight() - 36,
-      { align: "center" },
+      rightX,
+      footY + 20,
+      { align: "right" },
     );
 
     doc.save(`quotation-${slugify(quotationTitle(quotation))}.pdf`);

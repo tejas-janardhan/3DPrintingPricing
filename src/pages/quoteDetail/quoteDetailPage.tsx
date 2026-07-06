@@ -6,6 +6,7 @@ import {
   Copy,
   FileText,
   Pencil,
+  RotateCcw,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -54,9 +55,11 @@ import { DetailRow } from "./components/detailRow";
 
 export function QuoteDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data, duplicateQuotation, deleteQuotation } = useAppState();
+  const { data, duplicateQuotation, resyncQuotationSettings, deleteQuotation } =
+    useAppState();
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [includeDetails, setIncludeDetails] = useState(false);
 
   const quotation = data.quotations.find((q) => q.id === id);
@@ -68,6 +71,12 @@ export function QuoteDetailPage() {
   const handleDuplicate = () => {
     const newId = duplicateQuotation(quotation.id);
     if (newId) navigate(`/quote/${newId}/edit`);
+  };
+
+  const handleReset = () => {
+    resyncQuotationSettings(quotation.id);
+    setResetOpen(false);
+    navigate(`/quote/${quotation.id}/edit`);
   };
 
   const handleDelete = () => {
@@ -117,10 +126,39 @@ export function QuoteDetailPage() {
       <CardContent className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-2">
           {outdated ? (
-            <Button size="sm" onClick={handleDuplicate}>
-              <Copy />
-              Duplicate to edit
-            </Button>
+            <>
+              <Button size="sm" onClick={handleDuplicate}>
+                <Copy />
+                Duplicate to edit
+              </Button>
+              <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <RotateCcw />
+                    Reset to current settings
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Reset to current settings?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This re-prices “{quotationTitle(quotation)}” against your
+                      current global settings and unlocks it for editing. The
+                      previously frozen price will be replaced. This can’t be
+                      undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleReset}>
+                      Reset
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           ) : (
             <Button
               size="sm"
@@ -259,6 +297,22 @@ export function QuoteDetailPage() {
               value={finalPricing.finalPriceIncShipping}
               strong
             />
+            {finalPricing.advance > 0 && (
+              <>
+                <Separator className="my-1" />
+                <PriceRow
+                  label="Advance"
+                  value={finalPricing.advance}
+                  info={`${quotation.settings.advancePercent.trim() || "0"}% of the order value, due upfront`}
+                />
+                <PriceRow
+                  label="Balance Due"
+                  value={
+                    finalPricing.finalPriceIncShipping - finalPricing.advance
+                  }
+                />
+              </>
+            )}
           </div>
         </CardSection>
       </CardContent>

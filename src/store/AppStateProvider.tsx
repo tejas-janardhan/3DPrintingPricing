@@ -12,6 +12,7 @@ import type { AppData, PrinterCostInputs, Settings } from "@/types";
 import { EMPTY_APP_DATA } from "@/config/constants";
 import { pricedQuotation } from "@/lib/pricing";
 import { duplicateQuotation, makeQuotation } from "@/lib/quotations";
+import { cloneSettings } from "@/lib/settings";
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(() => loadAppData());
@@ -56,6 +57,22 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     return copy.id;
   }, []);
 
+  // Re-sync a quotation's settings snapshot to current global settings and re-price it.
+  const resyncQuotationSettings = useCallback((id: string) => {
+    setData((prev) => ({
+      ...prev,
+      quotations: prev.quotations.map((quotation) =>
+        quotation.id === id
+          ? pricedQuotation({
+              ...quotation,
+              settings: cloneSettings(prev.settings),
+              updatedAt: new Date().toISOString(),
+            })
+          : quotation,
+      ),
+    }));
+  }, []);
+
   const updateQuotation = useCallback((id: string, patch: QuotationPatch) => {
     setData((prev) => ({
       ...prev,
@@ -88,6 +105,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setPrinterCost,
       addQuotation,
       duplicateQuotation: duplicate,
+      resyncQuotationSettings,
       updateQuotation,
       deleteQuotation,
       importData,
@@ -99,6 +117,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setPrinterCost,
       addQuotation,
       duplicate,
+      resyncQuotationSettings,
       updateQuotation,
       deleteQuotation,
       importData,

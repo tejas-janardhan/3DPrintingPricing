@@ -88,6 +88,10 @@ export type Settings = {
   electricityCost: string;
   multiplier: string;
   taxPercent: string;
+  /** Order value above which an advance is charged; empty/0 means always. */
+  advanceThreshold: string;
+  /** Percentage of the order value taken as advance when over the threshold. */
+  advancePercent: string;
   /** Seeded into a new quotation's pricing/processing on creation. */
   defaultMarkup: string;
   defaultShipping: string;
@@ -103,5 +107,7 @@ export type FinalPricing = {
   finalCost: number;
   tax: number;
   finalPriceIncShipping: number;
+  /** Advance due upfront; 0 when the order value is at/below the threshold. */
+  advance: number;
   rsPerGram: number;
 };

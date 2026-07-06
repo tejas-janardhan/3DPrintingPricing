@@ -14,7 +14,7 @@ import {
 } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { FILAMENT_TYPE_OPTIONS, PRINTER_TYPE_OPTIONS } from "@/config/constants";
-import { requiredNumber } from "@/lib/validators";
+import { optionalNumber, requiredNumber } from "@/lib/validators";
 import type {
   FilamentSettings,
   FilamentType,
@@ -28,6 +28,8 @@ type GlobalSettingField =
   | "electricityCost"
   | "multiplier"
   | "taxPercent"
+  | "advanceThreshold"
+  | "advancePercent"
   | "defaultMarkup"
   | "defaultShipping"
   | "defaultProcessingMinutes";
@@ -241,6 +243,32 @@ export function SettingsCard({
               onChange={(value) => updateGlobalSetting("taxPercent", value)}
               disabled={!isEditing}
               validate={requiredNumber("Tax percent")}
+              showError={showErrors}
+              className="w-48"
+            />
+            <FieldInput
+              label={"Advance Threshold"}
+              placeholder={"Enter Advance Threshold"}
+              description="Order value above which an advance applies"
+              name={"advanceThreshold"}
+              value={settings.advanceThreshold}
+              onChange={(value) =>
+                updateGlobalSetting("advanceThreshold", value)
+              }
+              disabled={!isEditing}
+              validate={optionalNumber("Advance threshold")}
+              showError={showErrors}
+              className="w-48"
+            />
+            <FieldInput
+              label={"Advance Percent"}
+              placeholder={"Enter Advance Percent"}
+              description="% of order value taken as advance"
+              name={"advancePercent"}
+              value={settings.advancePercent}
+              onChange={(value) => updateGlobalSetting("advancePercent", value)}
+              disabled={!isEditing}
+              validate={optionalNumber("Advance percent")}
               showError={showErrors}
               className="w-48"
             />
