@@ -227,7 +227,7 @@ export async function openQuotePdf(
         textColor: DARK,
         cellPadding: { top: 9, bottom: 9, left: 10, right: 10 },
         lineColor: BLUE_LIGHT,
-        lineWidth: { bottom: 0.5, top: 0, left: 0, right: 0 },
+        lineWidth: { bottom: 0.5, top: 0, left: 0.5, right: 0.5 },
       },
       alternateRowStyles: { fillColor: BLUE_50 },
       columnStyles,
