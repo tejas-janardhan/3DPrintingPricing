@@ -34,14 +34,14 @@ export function computePlateCost(
     settings.byPrinter[DEFAULT_PRINTER_TYPE].setupTimeMinutes,
   );
   const monitoringCost = Math.ceil(
-    num(settings.labourRate) *
+    num(settings.operating.labourRate) *
       (MONITORING_RATE * totalPrintHours + setupTimeMinutes / 60),
   );
   const printUsageCost = Math.ceil(totalPrintHours * plateCostPerHour);
   const electricityCost = Math.ceil(
     (totalPrintHours *
       num(settings.byFilament[plate.filamentType].powerConsumption) *
-      num(settings.electricityCost)) /
+      num(settings.operating.electricityCost)) /
       1000,
   );
   // Only a fully-filled plate has a real cost. Incomplete plates still expose
@@ -50,7 +50,7 @@ export function computePlateCost(
   const plateCost = isPlateComplete(plate)
     ? Math.ceil(
         (materialCost + monitoringCost + printUsageCost + electricityCost) *
-          num(settings.multiplier),
+          num(settings.pricing.multiplier),
       )
     : 0;
 
@@ -86,10 +86,10 @@ export function computeFinalPricing({
     num(processing.postProcessingHours) +
     num(processing.postProcessingMinutes) / 60;
 
-  const wageCost = Math.ceil(processingHours * num(settings.labourRate));
+  const wageCost = Math.ceil(processingHours * num(settings.operating.labourRate));
   const lastPrice = wageCost + printCost + num(processing.partsCost);
   const finalCost = Math.ceil(lastPrice * (1 + num(pricing.markup) / 100));
-  const tax = Math.ceil((finalCost * num(settings.taxPercent)) / 100);
+  const tax = Math.ceil((finalCost * num(settings.pricing.taxPercent)) / 100);
   // No print cost means no real quote yet — keep the final price at zero.
   const finalPriceIncShipping =
     printCost > 0
@@ -98,9 +98,9 @@ export function computeFinalPricing({
 
   // Advance charged upfront when the order value exceeds the threshold.
   const advance =
-    finalPriceIncShipping >= num(settings.advanceThreshold)
+    finalPriceIncShipping >= num(settings.pricing.advanceThreshold)
       ? Math.round(
-          (finalPriceIncShipping * num(settings.advancePercent)) / 100 / 10,
+          (finalPriceIncShipping * num(settings.pricing.advancePercent)) / 100 / 10,
         ) * 10
       : 0;
 

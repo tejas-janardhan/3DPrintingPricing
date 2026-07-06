@@ -16,23 +16,16 @@ import { Separator } from "./ui/separator";
 import { FILAMENT_TYPE_OPTIONS, PRINTER_TYPE_OPTIONS } from "@/config/constants";
 import { optionalNumber, requiredNumber } from "@/lib/validators";
 import type {
+  BusinessSettings,
+  DefaultSettings,
   FilamentSettings,
   FilamentType,
+  OperatingSettings,
+  PricingSettings,
   PrinterSettings,
   PrinterType,
   Settings,
 } from "@/types";
-
-type GlobalSettingField =
-  | "labourRate"
-  | "electricityCost"
-  | "multiplier"
-  | "taxPercent"
-  | "advanceThreshold"
-  | "advancePercent"
-  | "defaultMarkup"
-  | "defaultShipping"
-  | "defaultProcessingMinutes";
 
 export function SettingsCard({
   settings,
@@ -75,8 +68,20 @@ export function SettingsCard({
       },
     });
 
-  const updateGlobalSetting = (field: GlobalSettingField, value: string) =>
-    onChange({ ...settings, [field]: value });
+  const updateBusiness = (field: keyof BusinessSettings, value: string) =>
+    onChange({ ...settings, business: { ...settings.business, [field]: value } });
+
+  const updateOperating = (field: keyof OperatingSettings, value: string) =>
+    onChange({
+      ...settings,
+      operating: { ...settings.operating, [field]: value },
+    });
+
+  const updatePricing = (field: keyof PricingSettings, value: string) =>
+    onChange({ ...settings, pricing: { ...settings.pricing, [field]: value } });
+
+  const updateDefault = (field: keyof DefaultSettings, value: string) =>
+    onChange({ ...settings, defaults: { ...settings.defaults, [field]: value } });
 
   return (
     <Card>
@@ -101,6 +106,56 @@ export function SettingsCard({
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6">
+        <CardSection
+          title="Business Details"
+          description="Shown on the quotation document sent to customers."
+        >
+          <Form orientation="horizontal" className="flex-wrap">
+            <FieldInput
+              label={"Business Name"}
+              placeholder={"Enter Business Name"}
+              description="Your business or brand name"
+              name={"businessName"}
+              value={settings.business.name}
+              onChange={(value) => updateBusiness("name", value)}
+              disabled={!isEditing}
+              className="w-64"
+            />
+            <FieldInput
+              label={"Business Address"}
+              placeholder={"Enter Business Address"}
+              description="Address shown on quotes"
+              name={"businessAddress"}
+              value={settings.business.address}
+              onChange={(value) => updateBusiness("address", value)}
+              disabled={!isEditing}
+              className="w-72"
+            />
+            <FieldInput
+              label={"Contact Name"}
+              placeholder={"Enter Contact Name"}
+              description="Person customers reach out to"
+              name={"businessContactName"}
+              value={settings.business.contactName}
+              onChange={(value) => updateBusiness("contactName", value)}
+              disabled={!isEditing}
+              className="w-64"
+            />
+            <FieldInput
+              label={"Contact Number"}
+              placeholder={"Enter Contact Number"}
+              description="Phone number shown on quotes"
+              name={"businessContactNumber"}
+              value={settings.business.contactNumber}
+              onChange={(value) => updateBusiness("contactNumber", value)}
+              disabled={!isEditing}
+              className="w-56"
+            />
+          </Form>
+        </CardSection>
+
+        <Separator />
+
         <CardSection
           title="Filament Settings"
           description="Printing costs specific to each filament type."
@@ -158,8 +213,8 @@ export function SettingsCard({
               placeholder={"Enter Labour Rate"}
               description="Labour cost per hour"
               name={"labourRate"}
-              value={settings.labourRate}
-              onChange={(value) => updateGlobalSetting("labourRate", value)}
+              value={settings.operating.labourRate}
+              onChange={(value) => updateOperating("labourRate", value)}
               disabled={!isEditing}
               validate={requiredNumber("Labour rate")}
               className="w-48"
@@ -170,8 +225,8 @@ export function SettingsCard({
               placeholder={"Enter cost"}
               description="Cost per KWHr"
               name={"electricityCost"}
-              value={settings.electricityCost}
-              onChange={(value) => updateGlobalSetting("electricityCost", value)}
+              value={settings.operating.electricityCost}
+              onChange={(value) => updateOperating("electricityCost", value)}
               disabled={!isEditing}
               validate={requiredNumber("Electricity cost")}
               showError={showErrors}
@@ -227,8 +282,8 @@ export function SettingsCard({
               placeholder={"Enter Multiplier"}
               description="Pricing multiplier (account for errors)"
               name={"multiplier"}
-              value={settings.multiplier}
-              onChange={(value) => updateGlobalSetting("multiplier", value)}
+              value={settings.pricing.multiplier}
+              onChange={(value) => updatePricing("multiplier", value)}
               disabled={!isEditing}
               validate={requiredNumber("Multiplier")}
               showError={showErrors}
@@ -239,8 +294,8 @@ export function SettingsCard({
               placeholder={"Enter Tax Percent"}
               description="Tax percentage"
               name={"taxPercent"}
-              value={settings.taxPercent}
-              onChange={(value) => updateGlobalSetting("taxPercent", value)}
+              value={settings.pricing.taxPercent}
+              onChange={(value) => updatePricing("taxPercent", value)}
               disabled={!isEditing}
               validate={requiredNumber("Tax percent")}
               showError={showErrors}
@@ -251,10 +306,8 @@ export function SettingsCard({
               placeholder={"Enter Advance Threshold"}
               description="Order value above which an advance applies"
               name={"advanceThreshold"}
-              value={settings.advanceThreshold}
-              onChange={(value) =>
-                updateGlobalSetting("advanceThreshold", value)
-              }
+              value={settings.pricing.advanceThreshold}
+              onChange={(value) => updatePricing("advanceThreshold", value)}
               disabled={!isEditing}
               validate={optionalNumber("Advance threshold")}
               showError={showErrors}
@@ -265,8 +318,8 @@ export function SettingsCard({
               placeholder={"Enter Advance Percent"}
               description="% of order value taken as advance"
               name={"advancePercent"}
-              value={settings.advancePercent}
-              onChange={(value) => updateGlobalSetting("advancePercent", value)}
+              value={settings.pricing.advancePercent}
+              onChange={(value) => updatePricing("advancePercent", value)}
               disabled={!isEditing}
               validate={optionalNumber("Advance percent")}
               showError={showErrors}
@@ -287,8 +340,8 @@ export function SettingsCard({
               placeholder={"Enter Default Markup"}
               description="Markup % seeded on new quotes"
               name={"defaultMarkup"}
-              value={settings.defaultMarkup}
-              onChange={(value) => updateGlobalSetting("defaultMarkup", value)}
+              value={settings.defaults.markup}
+              onChange={(value) => updateDefault("markup", value)}
               disabled={!isEditing}
               className="w-48"
             />
@@ -297,8 +350,8 @@ export function SettingsCard({
               placeholder={"Enter Default Shipping"}
               description="Shipping cost seeded on new quotes"
               name={"defaultShipping"}
-              value={settings.defaultShipping}
-              onChange={(value) => updateGlobalSetting("defaultShipping", value)}
+              value={settings.defaults.shipping}
+              onChange={(value) => updateDefault("shipping", value)}
               disabled={!isEditing}
               className="w-48"
             />
@@ -307,10 +360,8 @@ export function SettingsCard({
               placeholder={"Enter Minutes"}
               description="Processing minutes seeded on new quotes"
               name={"defaultProcessingMinutes"}
-              value={settings.defaultProcessingMinutes}
-              onChange={(value) =>
-                updateGlobalSetting("defaultProcessingMinutes", value)
-              }
+              value={settings.defaults.processingMinutes}
+              onChange={(value) => updateDefault("processingMinutes", value)}
               disabled={!isEditing}
               className="w-48"
             />

@@ -26,12 +26,12 @@ export function makeQuotation(settings: Settings): Quotation {
     plates: [makePlate(0)],
     processing: {
       ...EMPTY_PROCESSING,
-      processingMinutes: settings.defaultProcessingMinutes,
+      processingMinutes: settings.defaults.processingMinutes,
     },
     pricing: {
       ...EMPTY_PRICING,
-      markup: settings.defaultMarkup,
-      shipping: settings.defaultShipping,
+      markup: settings.defaults.markup,
+      shipping: settings.defaults.shipping,
     },
     plateCosts: [],
     finalPricing: { ...EMPTY_FINAL_PRICING },

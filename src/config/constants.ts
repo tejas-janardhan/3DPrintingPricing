@@ -26,15 +26,15 @@ export const FILAMENT_PRICE_OPTIONS: Record<
 };
 
 export const EMPTY_SETTINGS: Settings = {
-  labourRate: "",
-  electricityCost: "",
-  multiplier: "",
-  taxPercent: "",
-  advanceThreshold: "",
-  advancePercent: "",
-  defaultMarkup: "",
-  defaultShipping: "",
-  defaultProcessingMinutes: "",
+  business: { name: "", address: "", contactName: "", contactNumber: "" },
+  operating: { labourRate: "", electricityCost: "" },
+  pricing: {
+    multiplier: "",
+    taxPercent: "",
+    advanceThreshold: "",
+    advancePercent: "",
+  },
+  defaults: { markup: "", shipping: "", processingMinutes: "" },
   byFilament: {
     pla: { costPerHour: "", powerConsumption: "" },
     petg: { costPerHour: "", powerConsumption: "" },

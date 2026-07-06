@@ -29,9 +29,17 @@ function mergeSettings(input: unknown): Settings {
   const settings = isObject(input) ? input : {};
   const byFilament = isObject(settings.byFilament) ? settings.byFilament : {};
   const byPrinter = isObject(settings.byPrinter) ? settings.byPrinter : {};
+  const group = <T>(defaults: T, raw: unknown): T => ({
+    ...defaults,
+    ...(isObject(raw) ? raw : {}),
+  });
   return {
     ...EMPTY_SETTINGS,
     ...(settings as Partial<Settings>),
+    business: group(EMPTY_SETTINGS.business, settings.business),
+    operating: group(EMPTY_SETTINGS.operating, settings.operating),
+    pricing: group(EMPTY_SETTINGS.pricing, settings.pricing),
+    defaults: group(EMPTY_SETTINGS.defaults, settings.defaults),
     byFilament: {
       pla: {
         ...EMPTY_SETTINGS.byFilament.pla,

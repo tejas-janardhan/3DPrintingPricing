@@ -144,7 +144,8 @@ export async function openQuotePdf(
     doc.setTextColor(...WHITE);
     doc.text(quoteDate(quotation), rightX, 64, { align: "right" });
 
-    let y = bandH + 5 + 42;
+    const blockTop = bandH + 5 + 42;
+    let y = blockTop;
 
     // Customer ("Billed to")
     eyebrow("BILLED TO", margin, y, MUTED);
@@ -165,6 +166,32 @@ export async function openQuotePdf(
       doc.setFontSize(10);
       doc.setTextColor(...MUTED);
       doc.text(contact, margin, y);
+    }
+
+    // Business ("From") — right-aligned, from the global business settings.
+    const { business } = quotation.settings;
+    if (business.name.trim() || business.address.trim()) {
+      let by = blockTop;
+      eyebrow("FROM", rightX, by, MUTED, "right");
+      by += 17;
+      doc.setFont(FONT, "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(...DARK);
+      doc.text(business.name.trim() || "—", rightX, by, { align: "right" });
+      const businessLines = [
+        business.address.trim(),
+        [business.contactName.trim(), business.contactNumber.trim()]
+          .filter(Boolean)
+          .join("  ·  "),
+      ].filter(Boolean);
+      doc.setFont(FONT, "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(...MUTED);
+      for (const line of businessLines) {
+        by += 15;
+        doc.text(line, rightX, by, { align: "right", maxWidth: 240 });
+      }
+      y = Math.max(y, by);
     }
     y += 30;
 
@@ -273,7 +300,7 @@ export async function openQuotePdf(
 
     // Advance card, only when one is due.
     if (finalPricing.advance > 0) {
-      const advancePct = quotation.settings.advancePercent.trim() || "0";
+      const advancePct = quotation.settings.pricing.advancePercent.trim() || "0";
       const balance = finalPricing.finalPriceIncShipping - finalPricing.advance;
       ty += 14;
       const cardH = 58;

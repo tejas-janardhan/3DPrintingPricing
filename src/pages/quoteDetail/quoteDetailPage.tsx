@@ -289,7 +289,7 @@ export function QuoteDetailPage() {
             <PriceRow
               label="Tax"
               value={finalPricing.tax}
-              info={`Taxed at ${quotation.settings.taxPercent.trim() || "0"}% — frozen when this quote was created`}
+              info={`Taxed at ${quotation.settings.pricing.taxPercent.trim() || "0"}% — frozen when this quote was created`}
             />
             <Separator className="my-1" />
             <PriceRow
@@ -303,7 +303,7 @@ export function QuoteDetailPage() {
                 <PriceRow
                   label="Advance"
                   value={finalPricing.advance}
-                  info={`${quotation.settings.advancePercent.trim() || "0"}% of the order value, due upfront`}
+                  info={`${quotation.settings.pricing.advancePercent.trim() || "0"}% of the order value, due upfront`}
                 />
                 <PriceRow
                   label="Balance Due"

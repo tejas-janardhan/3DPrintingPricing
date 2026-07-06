@@ -83,19 +83,42 @@ export type PrinterSettings = {
   setupTimeMinutes: string;
 };
 
-export type Settings = {
+/** Business details shown on the quotation document. */
+export type BusinessSettings = {
+  name: string;
+  address: string;
+  contactName: string;
+  contactNumber: string;
+};
+
+/** Shared hourly/utility costs. */
+export type OperatingSettings = {
   labourRate: string;
   electricityCost: string;
+};
+
+/** Markup and tax applied to every quote. */
+export type PricingSettings = {
   multiplier: string;
   taxPercent: string;
   /** Order value above which an advance is charged; empty/0 means always. */
   advanceThreshold: string;
   /** Percentage of the order value taken as advance when over the threshold. */
   advancePercent: string;
-  /** Seeded into a new quotation's pricing/processing on creation. */
-  defaultMarkup: string;
-  defaultShipping: string;
-  defaultProcessingMinutes: string;
+};
+
+/** Seeded into a new quotation's pricing/processing on creation. */
+export type DefaultSettings = {
+  markup: string;
+  shipping: string;
+  processingMinutes: string;
+};
+
+export type Settings = {
+  business: BusinessSettings;
+  operating: OperatingSettings;
+  pricing: PricingSettings;
+  defaults: DefaultSettings;
   byFilament: Record<FilamentType, FilamentSettings>;
   byPrinter: Record<PrinterType, PrinterSettings>;
 };

@@ -46,7 +46,7 @@ export function PricingFields({
     {
       label: "Tax",
       value: tax,
-      info: `Taxed at ${settings.taxPercent.trim() || "0"}%`,
+      info: `Taxed at ${settings.pricing.taxPercent.trim() || "0"}%`,
     },
   ];
 
@@ -151,7 +151,7 @@ export function PricingFields({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {`${settings.advancePercent.trim() || "0"}% of the order value, due upfront`}
+                    {`${settings.pricing.advancePercent.trim() || "0"}% of the order value, due upfront`}
                   </TooltipContent>
                 </Tooltip>
               </span>

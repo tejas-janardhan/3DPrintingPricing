@@ -5,7 +5,10 @@ import type { FilamentType, Settings } from "@/types";
 /** A deep copy of a settings object, safe to store on a quotation. */
 export function cloneSettings(settings: Settings): Settings {
   return {
-    ...settings,
+    business: { ...settings.business },
+    operating: { ...settings.operating },
+    pricing: { ...settings.pricing },
+    defaults: { ...settings.defaults },
     byFilament: {
       pla: { ...settings.byFilament.pla },
       petg: { ...settings.byFilament.petg },
@@ -16,15 +19,18 @@ export function cloneSettings(settings: Settings): Settings {
   };
 }
 
-/** Value-equality of two settings snapshots (every field compared). */
+/**
+ * Value-equality of the pricing-relevant settings. Business details and seeding
+ * defaults are excluded — changing them doesn't outdate existing quotes.
+ */
 export function areSettingsEqual(a: Settings, b: Settings): boolean {
   return (
-    a.labourRate === b.labourRate &&
-    a.electricityCost === b.electricityCost &&
-    a.multiplier === b.multiplier &&
-    a.taxPercent === b.taxPercent &&
-    a.advanceThreshold === b.advanceThreshold &&
-    a.advancePercent === b.advancePercent &&
+    a.operating.labourRate === b.operating.labourRate &&
+    a.operating.electricityCost === b.operating.electricityCost &&
+    a.pricing.multiplier === b.pricing.multiplier &&
+    a.pricing.taxPercent === b.pricing.taxPercent &&
+    a.pricing.advanceThreshold === b.pricing.advanceThreshold &&
+    a.pricing.advancePercent === b.pricing.advancePercent &&
     a.byFilament.pla.costPerHour === b.byFilament.pla.costPerHour &&
     a.byFilament.pla.powerConsumption === b.byFilament.pla.powerConsumption &&
     a.byFilament.petg.costPerHour === b.byFilament.petg.costPerHour &&
@@ -43,10 +49,10 @@ const isFilled = (value: string) => requiredNumber("value")(value) === undefined
  */
 export function isGlobalSettingsComplete(settings: Settings): boolean {
   return (
-    isFilled(settings.labourRate) &&
-    isFilled(settings.electricityCost) &&
-    isFilled(settings.multiplier) &&
-    isFilled(settings.taxPercent) &&
+    isFilled(settings.operating.labourRate) &&
+    isFilled(settings.operating.electricityCost) &&
+    isFilled(settings.pricing.multiplier) &&
+    isFilled(settings.pricing.taxPercent) &&
     isFilled(settings.byPrinter[DEFAULT_PRINTER_TYPE].setupTimeMinutes)
   );
 }
