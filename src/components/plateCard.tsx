@@ -81,7 +81,7 @@ export function PlateCard({
   ];
 
   return (
-    <div className="flex w-94 shrink-0 flex-col gap-6 rounded-lg border bg-muted/30 p-4">
+    <div className="flex w-full flex-col gap-4 rounded-lg border bg-muted/30 p-4">
       <div className="flex items-center justify-between gap-2">
         <input
           type="text"
@@ -102,19 +102,21 @@ export function PlateCard({
           </Button>
         )}
       </div>
-      <div className="flex w-full flex-col gap-6">
-        {!filamentReady && (
-          <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <Settings2 className="size-3.5" />
-              Configure settings for this filament type to enable this plate.
-            </span>
-            <Button asChild variant="outline" size="sm" className="h-7">
-              <Link to="/settings">Configure settings</Link>
-            </Button>
-          </div>
-        )}
-        <Form orientation="vertical">
+
+      {!filamentReady && (
+        <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+          <span className="flex items-center gap-2">
+            <Settings2 className="size-3.5" />
+            Configure settings for this filament type to enable this plate.
+          </span>
+          <Button asChild variant="outline" size="sm" className="h-7">
+            <Link to="/settings">Configure settings</Link>
+          </Button>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+        <Form orientation="vertical" className="w-full gap-4 xl:w-52 xl:shrink-0">
           <FieldSelect
             options={FILAMENT_TYPE_OPTIONS}
             label={"Filament Type"}
@@ -143,6 +145,11 @@ export function PlateCard({
             validate={required("Filament pricing")}
             disabled={!filamentReady}
           />
+        </Form>
+
+        <Separator orientation="vertical" className="hidden xl:block" />
+
+        <Form orientation="vertical" className="w-full gap-4 xl:w-72 xl:shrink-0">
           <div className="flex gap-4">
             <FieldInput
               label={"Print Time (Hours)"}
@@ -173,6 +180,33 @@ export function PlateCard({
             validate={requiredNumber("Print weight")}
             disabled={!filamentReady}
           />
+          {showQuantity && (
+            <FieldInput
+              className="duration-300 animate-in fade-in slide-in-from-top-2"
+              label={"Quantity"}
+              placeholder={"Enter Quantity"}
+              description="Copies of this plate — multiplies its cost"
+              name={"quantity"}
+              value={plate.quantity}
+              onChange={(value) => updatePlate("quantity", value)}
+              validate={requiredNumber("Quantity")}
+              disabled={!filamentReady}
+              labelAction={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Dismiss quantity"
+                  className="size-5 shrink-0 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
+                  onClick={() => {
+                    setShowQuantity(false);
+                    updatePlate("quantity", "1");
+                  }}
+                >
+                  <X className="size-3.5" />
+                </Button>
+              }
+            />
+          )}
           {showImport && (
             <div className="flex flex-col gap-1.5 rounded-md border border-dashed border-border p-3 duration-300 animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center justify-between">
@@ -217,33 +251,6 @@ export function PlateCard({
               </p>
             </div>
           )}
-          {showQuantity && (
-            <FieldInput
-              className="duration-300 animate-in fade-in slide-in-from-top-2"
-              label={"Quantity"}
-              placeholder={"Enter Quantity"}
-              description="Copies of this plate — multiplies its cost"
-              name={"quantity"}
-              value={plate.quantity}
-              onChange={(value) => updatePlate("quantity", value)}
-              validate={requiredNumber("Quantity")}
-              disabled={!filamentReady}
-              labelAction={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Dismiss quantity"
-                  className="size-5 shrink-0 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground"
-                  onClick={() => {
-                    setShowQuantity(false);
-                    updatePlate("quantity", "1");
-                  }}
-                >
-                  <X className="size-3.5" />
-                </Button>
-              }
-            />
-          )}
           {(!showImport || !showQuantity) && (
             <div className="flex flex-wrap gap-4">
               {!showImport && (
@@ -274,9 +281,10 @@ export function PlateCard({
           )}
         </Form>
 
-        <Separator />
+        <Separator orientation="vertical" className="hidden xl:block" />
+        <Separator className="xl:hidden" />
 
-        <div className="flex flex-col">
+        <div className="flex w-full flex-col xl:w-48 xl:shrink-0">
           <div
             className={cn(
               "grid transition-all duration-300 ease-in-out",

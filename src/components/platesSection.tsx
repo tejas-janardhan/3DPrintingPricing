@@ -30,7 +30,7 @@ export function PlatesSection({
   const canAddPlate = !atPlateLimit && (lastPlate ? isPlateComplete(lastPlate) : true);
 
   return (
-    <div className="flex flex-wrap gap-4">
+    <div className="flex flex-col gap-4">
       {plates.map((plate) => (
         <PlateCard
           key={plate.id}
@@ -40,17 +40,17 @@ export function PlatesSection({
           onRemove={plates.length > 1 ? () => removePlate(plate.id) : undefined}
         />
       ))}
-      <button
-        type="button"
-        disabled={!canAddPlate}
-        onClick={addPlate}
-        className="flex w-72 min-h-40 flex-col items-center justify-center gap-2 rounded-lg bg-transparent text-sm font-medium text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-      >
-        <span className="flex size-9 items-center justify-center rounded-full border border-dashed border-current">
+      <div className="flex min-h-16 w-full flex-row items-center justify-center gap-2 rounded-lg border border-dashed text-sm font-medium text-muted-foreground">
+        <button
+          type="button"
+          disabled={!canAddPlate}
+          onClick={addPlate}
+          className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+        >
           <Plus className="size-4" />
-        </span>
+        </button>
         {atPlateLimit ? `Max ${MAX_PLATES} plates` : "Add Plate"}
-      </button>
+      </div>
     </div>
   );
 }

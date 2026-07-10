@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 export function CardSection({
   title,
   description,
+  badge,
   collapsible = false,
   defaultOpen = true,
   padded = false,
@@ -20,6 +21,8 @@ export function CardSection({
 }: {
   title: string;
   description?: string;
+  /** Small status pill shown next to the title, e.g. an "Incomplete" flag. */
+  badge?: ReactNode;
   collapsible?: boolean;
   defaultOpen?: boolean;
   /** Adds horizontal padding so input focus rings aren't clipped by overflow-hidden. */
@@ -38,8 +41,11 @@ export function CardSection({
 
   const heading = (
     <div className="flex flex-col gap-1 text-left">
-      <div className="text-base font-medium leading-none text-foreground">
-        {title}
+      <div className="flex items-center gap-2">
+        <div className="text-base font-medium leading-none text-foreground">
+          {title}
+        </div>
+        {badge}
       </div>
       {description && (
         <p className="text-base text-muted-foreground">{description}</p>

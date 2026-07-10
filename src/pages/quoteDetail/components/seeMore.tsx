@@ -21,7 +21,7 @@ export function SeeMore({ children }: { children: ReactNode }) {
       <Button
         variant="ghost"
         size="sm"
-        className="self-start px-0 text-xs text-muted-foreground hover:bg-transparent hover:text-foreground"
+        className="self-start px-0 text-xs text-primary hover:bg-transparent hover:text-primary/80"
         onClick={() => setOpen((shown) => !shown)}
       >
         {open ? "See less" : "See more"}

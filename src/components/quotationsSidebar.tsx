@@ -20,10 +20,17 @@ export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
     navigate(`/quote/${id}/edit`);
   };
 
-  const titleMatches = search(data.quotations, query, quotationTitle);
+  const sortedQuotations = [...data.quotations].sort((a, b) => {
+    const aOutdated = !areSettingsEqual(a.settings, data.settings);
+    const bOutdated = !areSettingsEqual(b.settings, data.settings);
+    if (aOutdated !== bOutdated) return aOutdated ? 1 : -1;
+    return b.updatedAt.localeCompare(a.updatedAt);
+  });
+
+  const titleMatches = search(sortedQuotations, query, quotationTitle);
   const titleIds = new Set(titleMatches.map((q) => q.id));
   const nameMatches = search(
-    data.quotations,
+    sortedQuotations,
     query,
     (quotation) => quotation.customer.name,
   ).filter((quotation) => !titleIds.has(quotation.id));

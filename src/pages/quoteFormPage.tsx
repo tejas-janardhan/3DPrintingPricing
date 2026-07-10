@@ -19,17 +19,28 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { computeFinalPricing, formatRs } from "@/lib/pricing";
+import { isPlateComplete } from "@/lib/plates";
+import { isCustomerComplete } from "@/lib/quotations";
 import { areSettingsEqual, isGlobalSettingsComplete } from "@/lib/settings";
 import { useAppState } from "@/store/appStateContext";
+
+/** Small pill flagging a section as still needing input. */
+function IncompleteBadge() {
+  return (
+    <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+      Incomplete
+    </span>
+  );
+}
 
 export function QuoteFormPage() {
   const { id } = useParams<{ id: string }>();
   const { data, updateQuotation } = useAppState();
   const [openSections, setOpenSections] = useState({
     customer: true,
-    plates: true,
-    processing: true,
-    pricing: true,
+    plates: false,
+    processing: false,
+    pricing: false,
   });
 
   const anyOpen = Object.values(openSections).some(Boolean);
@@ -54,6 +65,9 @@ export function QuoteFormPage() {
   }
 
   const settingsReady = isGlobalSettingsComplete(data.settings);
+  const customerComplete = isCustomerComplete(quotation.customer);
+  const platesComplete =
+    quotation.plates.length > 0 && quotation.plates.every(isPlateComplete);
   const { finalPriceIncShipping, rsPerGram } = computeFinalPricing({
     settings: quotation.settings,
     processing: quotation.processing,
@@ -107,6 +121,7 @@ export function QuoteFormPage() {
         <CardSection
           title="Customer"
           description="Who this quotation is for."
+          badge={!customerComplete && <IncompleteBadge />}
           collapsible
           padded
           open={openSections.customer}
@@ -144,6 +159,7 @@ export function QuoteFormPage() {
           <CardSection
             title="Plates"
             description="Add a plate for each print in the job."
+            badge={!platesComplete && <IncompleteBadge />}
             collapsible
             open={openSections.plates}
             onOpenChange={setSection("plates")}
