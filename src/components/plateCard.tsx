@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { ChevronDown, Copy, FileUp, Loader2, Settings2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -81,8 +81,8 @@ export function PlateCard({
   ];
 
   return (
-    <div className="flex w-full flex-col gap-4 rounded-lg border bg-muted/30 p-4">
-      <div className="flex items-center justify-between gap-2">
+    <div className="flex w-full flex-col gap-4 rounded-lg border bg-muted/30">
+      <div className="flex items-center justify-between gap-2 bg-muted/80 px-4 py-2.5 text-sm font-medium text-muted-foreground">
         <input
           type="text"
           aria-label="Plate name"
@@ -102,7 +102,6 @@ export function PlateCard({
           </Button>
         )}
       </div>
-
       {!filamentReady && (
         <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-2">
@@ -114,8 +113,7 @@ export function PlateCard({
           </Button>
         </div>
       )}
-
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+      <div className="pb-4 px-4 flex flex-col gap-6 xl:flex-row xl:justify-between xl:items-start">
         <Form orientation="vertical" className="w-full gap-4 xl:w-52 xl:shrink-0">
           <FieldSelect
             options={FILAMENT_TYPE_OPTIONS}
@@ -146,9 +144,7 @@ export function PlateCard({
             disabled={!filamentReady}
           />
         </Form>
-
         <Separator orientation="vertical" className="hidden xl:block" />
-
         <Form orientation="vertical" className="w-full gap-4 xl:w-72 xl:shrink-0">
           <div className="flex gap-4">
             <FieldInput
@@ -280,11 +276,9 @@ export function PlateCard({
             </div>
           )}
         </Form>
-
         <Separator orientation="vertical" className="hidden xl:block" />
         <Separator className="xl:hidden" />
-
-        <div className="flex w-full flex-col xl:w-48 xl:shrink-0">
+        <div className="flex w-full flex-col xl:w-70 xl:shrink-0">
           <div
             className={cn(
               "grid transition-all duration-300 ease-in-out",
@@ -294,15 +288,14 @@ export function PlateCard({
             )}
           >
             <div className="overflow-hidden">
-              <div className="flex flex-col gap-2 pb-3 text-sm text-muted-foreground">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-x-8 gap-y-2 pb-3 text-sm text-muted-foreground">
                 {costBreakdown.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between gap-8"
-                  >
+                  <Fragment key={item.label}>
                     <span>{item.label}</span>
-                    <span className="tabular-nums">{formatRs(item.value)}</span>
-                  </div>
+                    <span className="whitespace-nowrap text-right tabular-nums">
+                      {formatRs(item.value)}
+                    </span>
+                  </Fragment>
                 ))}
               </div>
             </div>
@@ -321,7 +314,7 @@ export function PlateCard({
               )}
             />
           </Button>
-          <div className="mt-3 flex items-center justify-between gap-8 text-base font-semibold">
+          <div className="mt-3flex items-center justify-between gap-8 text-base font-semibold">
             <span>Plate Cost</span>
             <span className="tabular-nums">{formatRs(costs.plateCost)}</span>
           </div>

@@ -170,9 +170,7 @@ export function QuoteFormPage() {
               onChange={(plates) => updateQuotation(quotation.id, { plates })}
             />
           </CardSection>
-
           <Separator />
-
           <CardSection
             title="Pre & Post Processing"
             description="Labour and parts added on top of printing."
