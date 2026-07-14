@@ -103,7 +103,7 @@ export function PlateCard({
         )}
       </div>
       {!filamentReady && (
-        <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+        <div className="flex flex-col items-start gap-2 rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 mx-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-2">
             <Settings2 className="size-3.5" />
             Configure settings for this filament type to enable this plate.
@@ -314,7 +314,7 @@ export function PlateCard({
               )}
             />
           </Button>
-          <div className="mt-3flex items-center justify-between gap-8 text-base font-semibold">
+          <div className="mt-3 flex items-center justify-between gap-8 text-base font-semibold">
             <span>Plate Cost</span>
             <span className="tabular-nums">{formatRs(costs.plateCost)}</span>
           </div>

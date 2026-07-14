@@ -80,7 +80,7 @@ export type QuotePdfOptions = {
   includeDetails?: boolean;
 };
 
-/** Builds and downloads a stylish, customer-facing PDF quotation. */
+/** Builds and downloads a stylish, customer-facing PDF invoice. */
 export async function openQuotePdf(
   quotation: Quotation,
   options: QuotePdfOptions = {},
@@ -123,29 +123,51 @@ export async function openQuotePdf(
       doc.setCharSpace(0);
     };
 
-    // Full-bleed header band with a lighter accent stripe beneath it.
+    // Letterhead band — business identity, with a lighter accent stripe below.
     const bandH = 116;
     doc.setFillColor(...BLUE_DARK);
     doc.rect(0, 0, pageW, bandH, "F");
     doc.setFillColor(...BLUE);
     doc.rect(0, bandH, pageW, 5, "F");
 
-    eyebrow("QUOTATION", margin, 48, BLUE_LIGHT);
+    const { business } = quotation.settings;
     doc.setFont(FONT, "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(20);
     doc.setTextColor(...WHITE);
-    doc.text(quotationTitle(quotation), margin, 78, {
+    doc.text(business.name.trim() || "Invoice", margin, 56, {
       maxWidth: pageW - margin * 2 - 130,
     });
-
-    eyebrow("DATE", rightX, 48, BLUE_LIGHT, "right");
+    const businessLines = [
+      business.address.trim(),
+      [business.contactName.trim(), business.contactNumber.trim()]
+        .filter(Boolean)
+        .join("  ·  "),
+    ].filter(Boolean);
     doc.setFont(FONT, "normal");
-    doc.setFontSize(11);
-    doc.setTextColor(...WHITE);
-    doc.text(quoteDate(quotation), rightX, 64, { align: "right" });
+    doc.setFontSize(9.5);
+    doc.setTextColor(...BLUE_LIGHT);
+    let hy = 76;
+    for (const line of businessLines) {
+      doc.text(line, margin, hy, { maxWidth: pageW - margin * 2 - 130 });
+      hy += 14;
+    }
+    eyebrow("INVOICE", rightX, 56, BLUE_LIGHT, "right");
 
     const blockTop = bandH + 5 + 42;
     let y = blockTop;
+
+    // Quote title + date
+    doc.setFont(FONT, "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(...BLUE_DARK);
+    doc.text(quotationTitle(quotation), margin, y, {
+      maxWidth: pageW - margin * 2 - 130,
+    });
+    doc.setFont(FONT, "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(...MUTED);
+    doc.text(quoteDate(quotation), rightX, y, { align: "right" });
+    y += 26;
 
     // Customer ("Billed to")
     eyebrow("BILLED TO", margin, y, MUTED);
@@ -166,32 +188,6 @@ export async function openQuotePdf(
       doc.setFontSize(10);
       doc.setTextColor(...MUTED);
       doc.text(contact, margin, y);
-    }
-
-    // Business ("From") — right-aligned, from the global business settings.
-    const { business } = quotation.settings;
-    if (business.name.trim() || business.address.trim()) {
-      let by = blockTop;
-      eyebrow("FROM", rightX, by, MUTED, "right");
-      by += 17;
-      doc.setFont(FONT, "bold");
-      doc.setFontSize(13);
-      doc.setTextColor(...DARK);
-      doc.text(business.name.trim() || "—", rightX, by, { align: "right" });
-      const businessLines = [
-        business.address.trim(),
-        [business.contactName.trim(), business.contactNumber.trim()]
-          .filter(Boolean)
-          .join("  ·  "),
-      ].filter(Boolean);
-      doc.setFont(FONT, "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(...MUTED);
-      for (const line of businessLines) {
-        by += 15;
-        doc.text(line, rightX, by, { align: "right", maxWidth: 240 });
-      }
-      y = Math.max(y, by);
     }
     y += 30;
 
@@ -345,7 +341,7 @@ export async function openQuotePdf(
       { align: "right" },
     );
 
-    doc.save(`quotation-${slugify(quotationTitle(quotation))}.pdf`);
+    doc.save(`invoice-${slugify(quotationTitle(quotation))}.pdf`);
     return true;
   } catch {
     return false;

@@ -98,9 +98,9 @@ export function QuoteDetailPage() {
 
   const handleGenerateQuote = async () => {
     if (await openQuotePdf(quotation, { includeDetails })) {
-      toast.success("Quote PDF downloaded.");
+      toast.success("Invoice PDF downloaded.");
     } else {
-      toast.error("Couldn't generate the quote PDF.");
+      toast.error("Couldn't generate the invoice PDF.");
     }
   };
 
@@ -208,12 +208,12 @@ export function QuoteDetailPage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
                   <FileText />
-                  Generate quote
+                  Generate invoice
                   <ChevronDown className="text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Quote PDF</DropdownMenuLabel>
+                <DropdownMenuLabel>Invoice PDF</DropdownMenuLabel>
                 <DropdownMenuCheckboxItem
                   checked={includeDetails}
                   onCheckedChange={setIncludeDetails}
