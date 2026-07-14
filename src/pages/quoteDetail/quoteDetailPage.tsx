@@ -274,6 +274,12 @@ export function QuoteDetailPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {!sold && !outdated && (
+                  <DropdownMenuItem onSelect={handleDuplicate}>
+                    <Copy />
+                    Duplicate
+                  </DropdownMenuItem>
+                )}
                 {quotation.status === "inProgress" && (
                   <DropdownMenuItem
                     onSelect={() =>
