@@ -15,10 +15,14 @@ export type Customer = {
   address: string;
 };
 
+/** Sale lifecycle: quote → inProgress → sold. Sold freezes the quote. */
+export type QuotationStatus = "quote" | "inProgress" | "sold";
+
 export type Quotation = {
   id: string;
   /** Optional user-given name for the quote; falls back to the customer name. */
   name: string;
+  status: QuotationStatus;
   customer: Customer;
   /** Snapshot of settings at creation; the quote is always priced against this. */
   settings: Settings;

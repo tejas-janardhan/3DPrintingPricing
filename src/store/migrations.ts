@@ -5,7 +5,7 @@
 // Each step MUST be idempotent. No steps exist yet — add one keyed by the old
 // version and bump `SCHEMA_VERSION` when the schema changes.
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /** Version assumed for persisted data that has no `schemaVersion` marker. */
 const INITIAL_VERSION = 1;
@@ -64,6 +64,15 @@ const MIGRATIONS: Record<number, (input: RawData) => RawData> = {
       quotations,
     };
   },
+  // v2 → v3: quotations gain a sale `status`; existing ones start as "quote".
+  2: (data) => ({
+    ...data,
+    quotations: Array.isArray(data.quotations)
+      ? data.quotations.map((q) =>
+          isObject(q) ? { status: "quote", ...q } : q,
+        )
+      : data.quotations,
+  }),
 };
 
 function detectVersion(input: RawData): number {

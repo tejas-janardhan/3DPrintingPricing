@@ -6,7 +6,20 @@ import {
 } from "@/config/constants";
 import { makePlate } from "@/lib/plates";
 import { cloneSettings } from "@/lib/settings";
-import type { Customer, PlateInputs, Quotation, Settings } from "@/types";
+import type {
+  Customer,
+  PlateInputs,
+  Quotation,
+  QuotationStatus,
+  Settings,
+} from "@/types";
+
+/** Display labels for each quotation status. */
+export const STATUS_LABELS: Record<QuotationStatus, string> = {
+  quote: "Quote",
+  inProgress: "In progress",
+  sold: "Sold",
+};
 
 let quotationSeq = 0;
 
@@ -21,6 +34,7 @@ export function makeQuotation(settings: Settings): Quotation {
   return {
     id: newQuotationId(),
     name: "",
+    status: "quote",
     customer: { ...EMPTY_CUSTOMER },
     settings: cloneSettings(settings),
     plates: [makePlate(0)],
@@ -54,6 +68,7 @@ export function duplicateQuotation(
   return {
     id,
     name: source.name,
+    status: "quote",
     customer: { ...source.customer },
     settings: cloneSettings(settings),
     plates,

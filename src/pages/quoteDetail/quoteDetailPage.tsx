@@ -1,17 +1,22 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
+  BadgeCheck,
   ChevronDown,
   ClipboardCopy,
   Copy,
+  EllipsisVertical,
   FileText,
+  Hammer,
   Pencil,
   RotateCcw,
   Trash2,
+  Undo2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CardSection } from "@/components/section";
 import { QuoteNotFound } from "@/components/quoteNotFound";
+import { StatusBadge } from "@/components/statusBadge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -55,17 +60,24 @@ import { DetailRow } from "./components/detailRow";
 
 export function QuoteDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data, duplicateQuotation, resyncQuotationSettings, deleteQuotation } =
-    useAppState();
+  const {
+    data,
+    duplicateQuotation,
+    resyncQuotationSettings,
+    updateQuotation,
+    deleteQuotation,
+  } = useAppState();
   const navigate = useNavigate();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
+  const [sellOpen, setSellOpen] = useState(false);
   const [includeDetails, setIncludeDetails] = useState(false);
 
   const quotation = data.quotations.find((q) => q.id === id);
   if (!quotation) return <QuoteNotFound />;
 
   const outdated = !areSettingsEqual(quotation.settings, data.settings);
+  const sold = quotation.status === "sold";
   const { finalPricing } = quotation;
 
   const handleDuplicate = () => {
@@ -83,6 +95,11 @@ export function QuoteDetailPage() {
     deleteQuotation(quotation.id);
     setConfirmOpen(false);
     navigate("/");
+  };
+
+  const handleMarkSold = () => {
+    updateQuotation(quotation.id, { status: "sold" });
+    setSellOpen(false);
   };
 
   const handleCopyPricing = async () => {
@@ -107,16 +124,26 @@ export function QuoteDetailPage() {
   return (
     <Card>
       <CardHeader className="border-b pb-6">
-        <CardTitle className="text-2xl font-semibold tracking-tight">
+        <CardTitle className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
           {quotationTitle(quotation)}
+          <StatusBadge status={quotation.status} />
         </CardTitle>
         <CardDescription>Quotation summary.</CardDescription>
         <CardAction className="flex flex-col items-end gap-0.5">
           <span className="text-xs uppercase tracking-wide text-muted-foreground">
             Final Price
           </span>
-          <span className="text-2xl font-semibold tabular-nums text-primary">
-            {formatRs(finalPricing.finalPriceIncShipping)}
+          <span className="flex items-center gap-1.5">
+            <button
+              onClick={handleCopyPricing}
+              aria-label="Copy final price"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ClipboardCopy className="size-4" />
+            </button>
+            <span className="text-2xl font-semibold tabular-nums text-primary">
+              {formatRs(finalPricing.finalPriceIncShipping)}
+            </span>
           </span>
           <span className="text-xs tabular-nums text-muted-foreground">
             {formatRs(finalPricing.rsPerGram)} /g
@@ -125,7 +152,12 @@ export function QuoteDetailPage() {
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-2">
-          {outdated ? (
+          {sold ? (
+            <Button size="sm" onClick={handleDuplicate}>
+              <Copy />
+              Duplicate
+            </Button>
+          ) : outdated ? (
             <>
               <Button size="sm" onClick={handleDuplicate}>
                 <Copy />
@@ -168,42 +200,49 @@ export function QuoteDetailPage() {
               Edit
             </Button>
           )}
-          <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 />
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete this quotation?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  The quotation for “{quotationTitle(quotation)}” will be
-                  permanently removed. This can’t be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive text-white hover:bg-destructive/90"
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {quotation.status === "quote" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                updateQuotation(quotation.id, { status: "inProgress" })
+              }
+            >
+              <Hammer />
+              Mark in progress
+            </Button>
+          )}
+          {quotation.status === "inProgress" && (
+            <AlertDialog open={sellOpen} onOpenChange={setSellOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <BadgeCheck />
+                  Mark as sold
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Mark this quotation as sold?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This records the sale and freezes “
+                    {quotationTitle(quotation)}”. A sold quotation can no
+                    longer be edited — you can still view it, copy its
+                    pricing, and generate invoices.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleMarkSold}>
+                    Mark as sold
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
 
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleCopyPricing}>
-              <ClipboardCopy />
-              Copy pricing
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -228,16 +267,71 @@ export function QuoteDetailPage() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" aria-label="More actions">
+                  <EllipsisVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {quotation.status === "inProgress" && (
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      updateQuotation(quotation.id, { status: "quote" })
+                    }
+                  >
+                    <Undo2 />
+                    Back to quote
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onSelect={() => setConfirmOpen(true)}
+                  className="text-destructive focus:text-destructive [&_svg]:text-destructive"
+                >
+                  <Trash2 />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {outdated && (
+        <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {sold ? "Delete this sold quotation?" : "Delete this quotation?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {sold
+                  ? `“${quotationTitle(quotation)}” was sold — deleting it permanently removes the record of the sale. This can’t be undone.`
+                  : `The quotation for “${quotationTitle(quotation)}” will be permanently removed. This can’t be undone.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive text-white hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {sold ? (
+          <p className="rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+            This quotation is sold, so it’s frozen to preserve the final sale
+            price. Duplicate it to start a new quote from the same details.
+          </p>
+        ) : outdated ? (
           <p className="rounded-md border border-dashed border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
             Your global settings have changed since this quotation was created,
             so it’s locked to keep its quoted price. Duplicate it to build a new
             quote with the current settings.
           </p>
-        )}
+        ) : null}
 
         <CardSection title="Customer">
           <div className="flex max-w-md flex-col gap-2">
@@ -315,6 +409,7 @@ export function QuoteDetailPage() {
             )}
           </div>
         </CardSection>
+
       </CardContent>
     </Card>
   );

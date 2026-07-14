@@ -106,6 +106,10 @@ function mergeQuotation(
         ? source.id
         : `quote-${index + 1}`,
     name: typeof source.name === "string" ? source.name : "",
+    status:
+      source.status === "inProgress" || source.status === "sold"
+        ? source.status
+        : "quote",
     customer: {
       ...EMPTY_CUSTOMER,
       ...(customer as Partial<Customer>),

@@ -20,6 +20,8 @@ The quotations section is a two-pane layout: [quotationsLayout.tsx](src/pages/qu
 - `/settings` → [settingsPage.tsx](src/pages/settingsPage.tsx) — global operating rates and per-filament settings.
 
 A quotation is **outdated/locked** when its `settings` snapshot differs from the current global settings ([`areSettingsEqual`](src/lib/settings.ts)) — it can't be edited, only viewed or duplicated (a copy under current settings, via `duplicateQuotation`).
+
+Each quotation also has a sale **status**: `quote` → `inProgress` → `sold` (labels in [`STATUS_LABELS`](src/lib/quotations.ts), pill UI in [statusBadge.tsx](src/components/statusBadge.tsx)). Only in-progress quotes can be marked sold (confirm modal on the detail page). A **sold** quote is frozen like an outdated one — no editing, only duplicate (duplicates always restart at `quote`). Rare actions (Delete, and "Back to quote" while in progress) live in a three-dot menu at the end of the detail page's action row. The sidebar filters by status.
 - `/printer-cost` → [printerCostPage.tsx](src/pages/printerCostPage.tsx) — printer amortization helper (cost/hour from capital + usage).
 - `/backup` → [backupPage.tsx](src/pages/backupPage.tsx) — export/import a JSON backup, reset data.
 - `*` → redirects to `/`.
@@ -38,7 +40,7 @@ A quotation is **outdated/locked** when its `settings` snapshot differs from the
 - [validators.ts](src/lib/validators.ts) — input validation. [utils.ts](src/lib/utils.ts) — `cn` classname helper.
 
 ### Types & config
-- [types/index.ts](src/types/index.ts) — all shared types; `AppData` is the root shape: `{ settings, quotations[], printerCost }`. A `Quotation` is `{ id, customer, settings, plates[], processing, pricing, finalPrice, createdAt, updatedAt }` (`settings` is a per-quote snapshot); `Customer` is `{ name, phone, address }` (address optional).
+- [types/index.ts](src/types/index.ts) — all shared types; `AppData` is the root shape: `{ settings, quotations[], printerCost }`. A `Quotation` is `{ id, name, status, customer, settings, plates[], processing, pricing, plateCosts[], finalPricing, createdAt, updatedAt }` (`settings` is a per-quote snapshot); `Customer` is `{ name, phone, address }` (address optional).
 - [config/constants.ts](src/config/constants.ts) — `EMPTY_*` defaults, filament options, and tunable constants (`MONITORING_RATE`, `SETUP_TIME_MINUTES`, `MAX_PLATES`, `BACKUP_REMINDER_INTERVAL_MS`).
 
 ### Components ([src/components/](src/components/))

@@ -3,17 +3,24 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { StatusBadge } from "@/components/statusBadge";
 import { cn } from "@/lib/utils";
 import { formatRs } from "@/lib/pricing";
 import { areSettingsEqual } from "@/lib/settings";
-import { quotationTitle } from "@/lib/quotations";
+import { quotationTitle, STATUS_LABELS } from "@/lib/quotations";
 import { search } from "@/lib/search";
 import { useAppState } from "@/store/appStateContext";
+import type { QuotationStatus } from "@/types";
+
+type StatusFilter = QuotationStatus | "all";
+
+const STATUS_FILTERS: StatusFilter[] = ["all", "quote", "inProgress", "sold"];
 
 export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
   const { data, addQuotation } = useAppState();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const handleNew = () => {
     const id = addQuotation();
@@ -27,10 +34,15 @@ export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
     return b.updatedAt.localeCompare(a.updatedAt);
   });
 
-  const titleMatches = search(sortedQuotations, query, quotationTitle);
+  const filteredQuotations = sortedQuotations.filter(
+    (quotation) =>
+      statusFilter === "all" || quotation.status === statusFilter,
+  );
+
+  const titleMatches = search(filteredQuotations, query, quotationTitle);
   const titleIds = new Set(titleMatches.map((q) => q.id));
   const nameMatches = search(
-    sortedQuotations,
+    filteredQuotations,
     query,
     (quotation) => quotation.customer.name,
   ).filter((quotation) => !titleIds.has(quotation.id));
@@ -56,11 +68,16 @@ export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
             <span className="truncate text-sm font-medium text-foreground">
               {quotationTitle(quotation)}
             </span>
-            {outdated && (
-              <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                Outdated
-              </span>
-            )}
+            <span className="flex shrink-0 items-center gap-1">
+              {quotation.status !== "quote" && (
+                <StatusBadge status={quotation.status} />
+              )}
+              {outdated && quotation.status !== "sold" && (
+                <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Outdated
+                </span>
+              )}
+            </span>
           </span>
           <span className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <span className="truncate">
@@ -97,13 +114,34 @@ export function QuotationsSidebar({ showAdd = true }: { showAdd?: boolean }) {
         </div>
       )}
 
+      {data.quotations.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {STATUS_FILTERS.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setStatusFilter(filter)}
+              className={cn(
+                "rounded-full border px-2.5 py-0.5 text-xs transition-colors",
+                statusFilter === filter
+                  ? "border-ring bg-accent text-accent-foreground"
+                  : "border-border text-muted-foreground hover:bg-accent/50",
+              )}
+            >
+              {filter === "all" ? "All" : STATUS_LABELS[filter]}
+            </button>
+          ))}
+        </div>
+      )}
+
       {data.quotations.length === 0 ? (
         <p className="px-1 py-6 text-center text-sm text-muted-foreground">
           No quotations yet.
         </p>
       ) : !hasMatches ? (
         <p className="px-1 py-6 text-center text-sm text-muted-foreground">
-          No matches for “{query.trim()}”.
+          {query.trim()
+            ? `No matches for “${query.trim()}”.`
+            : "No quotations with this status."}
         </p>
       ) : (
         <div className="flex flex-col gap-3">

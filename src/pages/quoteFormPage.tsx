@@ -59,8 +59,11 @@ export function QuoteFormPage() {
   const quotation = data.quotations.find((q) => q.id === id);
   if (!quotation) return <QuoteNotFound />;
 
-  // A locked (outdated) quote can only be viewed/duplicated — send edits to detail.
-  if (!areSettingsEqual(quotation.settings, data.settings)) {
+  // A locked (sold or outdated) quote can only be viewed/duplicated — send edits to detail.
+  if (
+    quotation.status === "sold" ||
+    !areSettingsEqual(quotation.settings, data.settings)
+  ) {
     return <Navigate to={`/quote/${quotation.id}`} replace />;
   }
 
